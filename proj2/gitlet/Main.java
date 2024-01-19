@@ -1,5 +1,6 @@
 package gitlet;
 
+
 /** Driver class for Gitlet, a subset of the Git version-control system.
  *  @author TODO
  */
@@ -18,11 +19,18 @@ public class Main {
         switch(firstArg) {
             case "init":
                 // TODO: handle the `init` command
+                validateNumArgs(args, 1);
                 break;
             case "add":
                 // TODO: handle the `add [filename]` command
                 break;
             // TODO: FILL THE REST IN
+        }
+    }
+    public static void validateNumArgs(String[] args, int num){
+        if (args.length != num){
+            System.out.println("Incorrect operands.");
+            System.exit(0);
         }
     }
 }
