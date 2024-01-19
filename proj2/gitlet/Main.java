@@ -15,8 +15,9 @@ public class Main {
     public static void main(String[] args) throws IOException {
         // TODO: what if args is empty?
         if (args.length == 0){
-            System.out.println("Please enter a command.");
-            System.exit(0);
+//            System.out.println("Please enter a command.");
+            throw new IllegalArgumentException("Please enter a command.");
+//            System.exit(0);
         }
         String firstArg = args[0];
         switch(firstArg) {
