@@ -46,26 +46,26 @@ public class Repository {
     /** For the initialization of the working directory: create .gitlet and in it,
      * create .staging, .rmstaging, .blob, .commit for storing different files. Create
      * the initial commit.*/
-    public static void setupPersistence() throws IOException {
-        if (!GITLET_DIR.exists()){
-            GITLET_DIR.mkdir();
-            STAGING.mkdir();
-            RMSTAGING.mkdir();
-            BLOB.mkdir();
-            COMMIT.mkdir();
-            HEAD_DIR.mkdir();
-            MASTER_DIR.mkdir();
-            HEAD.createNewFile();
-            MASTER.createNewFile();
-
-            Commit initialCommit = new Commit("initial commit",null, "1-1-1970 00:00:00");
-            //write the commit into a file
-            initialCommit.saveCommit(COMMIT);
-        } else {
-            System.out.println("A Gitlet version-control system already exists in the current directory.");
-            System.exit(0);
-        }
-    }
+//    public static void setupPersistence() throws IOException {
+//        if (!GITLET_DIR.exists()){
+//            GITLET_DIR.mkdir();
+//            STAGING.mkdir();
+//            RMSTAGING.mkdir();
+//            BLOB.mkdir();
+//            COMMIT.mkdir();
+//            HEAD_DIR.mkdir();
+//            MASTER_DIR.mkdir();
+//            HEAD.createNewFile();
+//            MASTER.createNewFile();
+//
+//            Commit initialCommit = new Commit("initial commit",null, "1-1-1970 00:00:00");
+//            //write the commit into a file
+//            initialCommit.saveCommit(COMMIT);
+//        } else {
+//            System.out.println("A Gitlet version-control system already exists in the current directory.");
+//            System.exit(0);
+//        }
+//    }
 
     /* TODO: fill in the rest of this class. */
 }
