@@ -35,9 +35,9 @@ public class Repository {
     /** The .commit directory. */
     public static final File COMMIT = join(GITLET_DIR, "commit");
     /** The .HEAD directory. */
-    public static final File HEAD_DIR = join(GITLET_DIR, "HEAD");
-    /** The .Master directory. */
-    public static final File MASTER_DIR = join(GITLET_DIR, "Master");
+//    public static final File HEAD_DIR = join(GITLET_DIR, "HEAD");
+//    /** The .Master directory. */
+//    public static final File MASTER_DIR = join(GITLET_DIR, "Master");
     /** The .HEAD File. */
     public static final File HEAD = join(HEAD_DIR, "HEAD");
     /** The .Master file. */
