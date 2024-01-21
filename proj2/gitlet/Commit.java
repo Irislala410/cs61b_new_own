@@ -50,22 +50,22 @@ public class Commit implements Serializable {
     }
 
     /** Write commit into a file whose name is the sha1 of the commit. */
-    public void saveCommit(File saveCommitDIR) throws IOException {
-        /**temporarily used for convert commit object to string for sha1*/
-        File tempOutFile = Utils.join(saveCommitDIR, "tempOutFile");
-        if (!tempOutFile.exists()) {
-            tempOutFile.createNewFile();
-        }
-        writeObject(tempOutFile, this);
-        String commitString = Utils.readContentsAsString(tempOutFile);
-        String commitSha1 = Utils.sha1(commitString);
-        File outFile = Utils.join(saveCommitDIR, commitSha1);
-        if (!outFile.exists()){
-            outFile.createNewFile();
-            writeObject(outFile, this); // the saved commit object
-        }
+//    public void saveCommit(File saveCommitDIR) throws IOException {
+//        /**temporarily used for convert commit object to string for sha1*/
+//        File tempOutFile = Utils.join(saveCommitDIR, "tempOutFile");
+//        if (!tempOutFile.exists()) {
+//            tempOutFile.createNewFile();
+//        }
+//        writeObject(tempOutFile, this);
+//        String commitString = Utils.readContentsAsString(tempOutFile);
+//        String commitSha1 = Utils.sha1(commitString);
+//        File outFile = Utils.join(saveCommitDIR, commitSha1);
+//        if (!outFile.exists()){
+//            outFile.createNewFile();
+//            writeObject(outFile, this); // the saved commit object
+//        }
 
 //        updateHEAD(commitSha1); //after updateHEAD and updateMaster added, this two lines need to be added.
 //        updateMaster(commitSha1);
-    }
+//    }
 }
