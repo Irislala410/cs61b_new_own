@@ -12,7 +12,7 @@ public class Main {
     /** Usage: java gitlet.Main ARGS, where ARGS contains
      *  <COMMAND> <OPERAND1> <OPERAND2> ... 
      */
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         // TODO: what if args is empty?
         if (args.length == 0){
             System.out.println("Please enter a command.");
@@ -23,43 +23,74 @@ public class Main {
             case "init":
                 // TODO: handle the `init` command
                 validateNumArgs(args, 1);
-                Repository.setupPersistence();
+                try {
+                    Repository.setupPersistence();
+                } catch (IOException e) {
+                    System.exit(0);
+                }
                 break;
             case "add":
                 // TODO: handle the `add [filename]` command
                 validateNumArgs(args, 2);
                 Repository.checkInitial();
-                Repository.add(args[1]);
+                try {
+                    Repository.add(args[1]);
+                } catch (IOException e) {
+                    System.exit(0);
+                }
                 break;
             case "commit":
                 //
                 validateNumArgs(args, 2);
                 Repository.checkInitial();
-                Repository.newCommit(args[1]);
+                try {
+                    Repository.newCommit(args[1]);
+                } catch (IOException e) {
+                    System.exit(0);
+                }
+
                 break;
             case "rm":
                 validateNumArgs(args, 2);
                 Repository.checkInitial();
-                Repository.removeFile(args[1]);
+                try {
+                    Repository.removeFile(args[1]);
+                } catch (IOException e) {
+                    System.exit(0);
+                }
+
                 //
                 break;
             case "log":
                 validateNumArgs(args, 1);
                 Repository.checkInitial();
-                Repository.log();
+                try {
+                    Repository.log();
+                } catch (IOException e) {
+                    System.exit(0);
+                }
                 //
                 break;
             case "global-log":
                 validateNumArgs(args, 1);
                 Repository.checkInitial();
-                Repository.globalLog();
+                try {
+                    Repository.globalLog();
+                } catch (IOException e) {
+                    System.exit(0);
+                }
                 //
                 break;
             case "find":
                 //
                 validateNumArgs(args, 2);
                 Repository.checkInitial();
-                Repository.find(args[1]);
+                try {
+                    Repository.find(args[1]);
+                } catch (IOException e) {
+                    System.exit(0);
+                }
+
                 break;
             case "status":
                 //
@@ -75,10 +106,19 @@ public class Main {
                 }
                 Repository.checkInitial();
                 if (args.length == 3){
-                    Repository.checkHEADCommit(args[2]);
+                    try {
+                        Repository.checkHEADCommit(args[2]);
+                    } catch (IOException e) {
+                        System.exit(0);
+                    }
                 }
                 if (args.length == 4){
-                    Repository.checkSpecificCommit(args[1], args[3]);
+                    try {
+                        Repository.checkSpecificCommit(args[1], args[3]);
+                    } catch (IOException e) {
+                        System.exit(0);
+                    }
+
                 }
                 Repository.checkInitial();
                 break;
