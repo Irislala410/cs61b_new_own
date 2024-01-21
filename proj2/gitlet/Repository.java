@@ -27,13 +27,13 @@ public class Repository {
     /** The .gitlet directory. */
     public static final File GITLET_DIR = join(CWD, ".gitlet");
     /** The .staging directory. */
-    public static final File STAGING = join(GITLET_DIR, "staging");
-    /** The .rmstaging directory. */
-    public static final File RMSTAGING = join(GITLET_DIR, "rmstaging");
-    /** The .blob directory. */
-    public static final File BLOB = join(GITLET_DIR, "blob");
-    /** The .commit directory. */
-    public static final File COMMIT = join(GITLET_DIR, "commit");
+//    public static final File STAGING = join(GITLET_DIR, "staging");
+//    /** The .rmstaging directory. */
+//    public static final File RMSTAGING = join(GITLET_DIR, "rmstaging");
+//    /** The .blob directory. */
+//    public static final File BLOB = join(GITLET_DIR, "blob");
+//    /** The .commit directory. */
+//    public static final File COMMIT = join(GITLET_DIR, "commit");
     /** The .HEAD directory. */
 //    public static final File HEAD_DIR = join(GITLET_DIR, "HEAD");
 //    /** The .Master directory. */
