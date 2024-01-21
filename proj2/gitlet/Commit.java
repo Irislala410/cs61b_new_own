@@ -42,12 +42,12 @@ public class Commit implements Serializable {
      * @param parent: the SHA - 1 hash of the parent commit.
      * @param timestamp: the timestamp of the commit.
      * */
-    public Commit(String message, String parent, String timestamp){
-        this.message = message;
-        this.parent = parent;
-        this.timestamp = timestamp;
-        this.filenameBlob = new HashMap<>();
-    }
+//    public Commit(String message, String parent, String timestamp){
+//        this.message = message;
+//        this.parent = parent;
+//        this.timestamp = timestamp;
+//        this.filenameBlob = new HashMap<>();
+//    }
 
     /** Write commit into a file whose name is the sha1 of the commit. */
 //    public void saveCommit(File saveCommitDIR) throws IOException {
