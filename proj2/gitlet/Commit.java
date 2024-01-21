@@ -30,11 +30,11 @@ public class Commit implements Serializable {
 
     /* TODO: fill in the rest of this class. */
     /** The timestamp of this Commit. */
-    private String timestamp;
-    /** The parent of this Commit. */
-    private String parent;
-    /** contains the file names and their blobs in the commit.*/
-    public HashMap<String, String> filenameBlob;
+//    private String timestamp;
+//    /** The parent of this Commit. */
+//    private String parent;
+//    /** contains the file names and their blobs in the commit.*/
+//    public HashMap<String, String> filenameBlob;
 
     /* TODO: fill in the rest of this class. */
     /** Constructor for Commit class.
