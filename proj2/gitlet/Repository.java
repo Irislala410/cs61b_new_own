@@ -39,9 +39,9 @@ public class Repository {
 //    /** The .Master directory. */
 //    public static final File MASTER_DIR = join(GITLET_DIR, "Master");
     /** The .HEAD File. */
-    public static final File HEAD = join(HEAD_DIR, "HEAD");
-    /** The .Master file. */
-    public static final File MASTER = join(MASTER_DIR, "Master");
+//    public static final File HEAD = join(HEAD_DIR, "HEAD");
+//    /** The .Master file. */
+//    public static final File MASTER = join(MASTER_DIR, "Master");
 
     /** For the initialization of the working directory: create .gitlet and in it,
      * create .staging, .rmstaging, .blob, .commit for storing different files. Create
