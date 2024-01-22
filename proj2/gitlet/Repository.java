@@ -310,8 +310,7 @@ public class Repository {
         List<String> files = Utils.plainFilenamesIn(COMMIT);
         /* Check if the commit id exists*/
         if (files.contains(commitId)) {
-            String commitSha1 = Utils.readContentsAsString(Utils.join(COMMIT, commitId));
-            checkCommitFile(commitSha1, fileName);
+            checkCommitFile(commitId, fileName);
         } else {
             System.out.println("No commit with that id exists.");
             System.exit(0);
