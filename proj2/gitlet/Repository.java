@@ -5,7 +5,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 //import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.time.LocalDateTime;
+//import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
@@ -181,8 +182,8 @@ public class Repository {
 
     /** Get system time as String. */
     public static String getTimeStamp() {
-        LocalDateTime currentTime = LocalDateTime.now();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEE MMM dd HH:mm:ss yyyy");
+        ZonedDateTime currentTime = ZonedDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEE MMM dd HH:mm:ss yyyy Z");
         String timeStamp = currentTime.format(formatter);
         return timeStamp;
 
