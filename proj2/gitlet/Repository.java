@@ -93,12 +93,14 @@ public class Repository {
                     null,
                     "Thu Jan 1 00:00:00 1970 +0000"
             );
-            //write the commit into a file
+            //Create a branch.
+            Branch initialBranch = new Branch();
+//            initialBranch.initializeBranch();
+            initialBranch.save();
+
+            //write the commit into a file. Branch Updating is made in .saveCommit.
             initialCommit.saveCommit(COMMIT);
-            Branch branch = new Branch();
-            String initialCommitSHA1 = Utils.readContentsAsString(Repository.HEAD);
-            branch.update("master", initialCommitSHA1);
-            branch.save();
+
 
         } else {
             System.out.println("A Gitlet version-control system already exists " +

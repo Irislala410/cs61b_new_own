@@ -8,12 +8,18 @@ public class Branch implements Serializable {
      * List all the branch names and their corresponding commits.
      * key HEAD's value is active branch.
      * */
-    HashMap<String, String> branch;
+    public HashMap<String, String> branch;
 
     public Branch() {
+        this.branch = new HashMap<>();
         this.branch.put("head", "master");
         this.branch.put("master", null);
     }
+
+//    public void initializeBranch() {
+//        this.branch.put("head", "master");
+//        this.branch.put("master", null);
+//    }
     /**
      * Create a new branch.*/
     public void createNewBranch(String newBranch){
