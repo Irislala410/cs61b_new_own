@@ -28,7 +28,7 @@ public class Commit implements Serializable {
     /** The parent of this Commit. */
     private String parent;
     /** contains the file names and their blobs in the commit.*/
-    public HashMap<String, String> filenameBlob;
+    HashMap<String, String> filenameBlob;
 
     /** Constructor for Commit class.
     * @param message: the commit message provided by the user.
@@ -59,7 +59,9 @@ public class Commit implements Serializable {
         }
 
         updateHEAD(commitSha1);
-        updateMaster(commitSha1);
+//        updateMaster(commitSha1); //!!!this is a problem for branch. should be changed
+        //to sth like updateActiveBranch.
+        updateActiveBranch(commitSha1);
     }
 
     /** Update the master pointer. */
@@ -72,6 +74,15 @@ public class Commit implements Serializable {
         Utils.writeContents(Repository.HEAD, commitSha1);
     }
 
+    /** Update the active branch pointer. */
+    public static void updateActiveBranch(String commitSha1) {
+        Branch branch = Utils.readObject(Repository.BRANCH, Branch.class);
+        String activeBranch = branch.branch.get("head");
+        branch.update(activeBranch, commitSha1);
+        branch.save();
+    }
+
+
     /** Return if the commit contains file: fileName. */
     public boolean containFile(String fileName) {
         return this.filenameBlob.containsKey(fileName);
@@ -81,11 +92,17 @@ public class Commit implements Serializable {
         return this.filenameBlob.get(fileName);
     }
 
-    public String getMessage() { return this.message; }
+    public String getMessage() {
+        return this.message;
+    }
 
-    public String getParent() { return this.parent; }
+    public String getParent() {
+        return this.parent;
+    }
 
-    public String getDate() { return this.timestamp; }
+    public String getDate() {
+        return this.timestamp;
+    }
 
 
 }

@@ -126,6 +126,7 @@ public class Main {
                 //
                 validateNumArgs(args, 2);
                 Repository.checkInitial();
+                Repository.newBranch(args[1]);
                 break;
             case "rm-branch":
                 //

@@ -9,6 +9,7 @@ import java.nio.file.StandardCopyOption;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Set;
 
 import static gitlet.Utils.*;
 
@@ -46,6 +47,11 @@ public class Repository {
     public static final File HEAD = join(HEAD_DIR, "HEAD");
     /** The .Master file. */
     public static final File MASTER = join(MASTER_DIR, "Master");
+    /** The .BRANCH directory. */
+    public static final File BRANCH_DIR = join(GITLET_DIR, "Branch");
+    /** The .Branch File. */
+    public static final File BRANCH = join(BRANCH_DIR, "Branch");
+
 
 
 
@@ -79,12 +85,24 @@ public class Repository {
             MASTER_DIR.mkdir();
             HEAD.createNewFile();
             MASTER.createNewFile();
+            BRANCH_DIR.mkdir();
+            BRANCH.createNewFile();
 
-            Commit initialCommit = new Commit("initial commit", null, "Thu Jan 1 00:00:00 1970 +0000");
+            Commit initialCommit = new Commit(
+                    "initial commit",
+                    null,
+                    "Thu Jan 1 00:00:00 1970 +0000"
+            );
             //write the commit into a file
             initialCommit.saveCommit(COMMIT);
+            Branch branch = new Branch();
+            String initialCommitSHA1 = Utils.readContentsAsString(Repository.HEAD);
+            branch.update("master", initialCommitSHA1);
+            branch.save();
+
         } else {
-            System.out.println("A Gitlet version-control system already exists in the current directory.");
+            System.out.println("A Gitlet version-control system already exists " +
+                    "in the current directory.");
             System.exit(0);
         }
     }
@@ -98,11 +116,19 @@ public class Repository {
             System.exit(0);
         } else if (!fileInCurrentCommit(addFile)) {
             // if file exist and not in current commit, stage it and remove it if it is in removal area;
-            Files.copy(fileToAdd.toPath(), Utils.join(STAGING, addFile).toPath(), StandardCopyOption.REPLACE_EXISTING);
+            Files.copy(
+                    fileToAdd.toPath(),
+                    Utils.join(STAGING, addFile).toPath(),
+                    StandardCopyOption.REPLACE_EXISTING
+            );
             removeFromRMSTAGING(addFile);
         } else if (!sameContentInCurrentCommit(addFile)) {
             // if it is in current commit but not the same, stage it and remove it if it is in removal area;
-            Files.copy(fileToAdd.toPath(), Utils.join(STAGING, addFile).toPath(), StandardCopyOption.REPLACE_EXISTING);
+            Files.copy(
+                    fileToAdd.toPath(),
+                    Utils.join(STAGING, addFile).toPath(),
+                    StandardCopyOption.REPLACE_EXISTING
+            );
             removeFromRMSTAGING(addFile);
         } else if (Utils.join(STAGING, addFile).exists()) { //this line was else if (fileInStagingArea(addFile)){
             //if it is in current commit and the same, delete it from staging if it is there.
@@ -198,7 +224,10 @@ public class Repository {
 //        File newBlob = Utils.join(BLOB, addedFileSha1);
 //        newBlob.createNewFile();
         /* Copy the added file in staging area to the blob file. */
-        Files.copy(Utils.join(STAGING, addedFile).toPath(), Utils.join(BLOB, addedFileSha1).toPath());
+        Files.copy(
+                Utils.join(STAGING, addedFile).toPath(),
+                Utils.join(BLOB, addedFileSha1).toPath()
+        );
         return addedFileSha1;
     }
 
@@ -290,7 +319,31 @@ public class Repository {
     }
     /** Print out the status information.*/
     public static void status() {
-
+        /* Print out branches. */
+        System.out.println("===" + " Branches " + "===");
+        Branch branch = Utils.readObject(BRANCH, Branch.class);
+        // Print active branch.
+        String activeBranch = branch.branch.get("head");
+        System.out.println("*" + activeBranch);
+        //Print other branches.
+        Set<String> branches = branch.branch.keySet();
+        for (String aBranch : branches) {
+            if (!aBranch.equals(activeBranch)){
+                System.out.println(aBranch);
+            }
+        }
+        /* Print out staged files*/
+        System.out.println("===" + " Staged Files " + "===");
+        List<String> stagedFiles = Utils.plainFilenamesIn(STAGING);
+        for(String stagedFile : stagedFiles) {
+            System.out.println(stagedFile);
+        }
+        /* Print out Removed files*/
+        System.out.println("===" + " Removed Files " + "===");
+        List<String> removedFiles = Utils.plainFilenamesIn(RMSTAGING);
+        for(String removedFile : removedFiles) {
+            System.out.println(removedFile);
+        }
     }
 
     /** Takes the version of the file as it exists in the head commit and puts it in
@@ -298,8 +351,8 @@ public class Repository {
      * there if there is one. The new version of the file is not staged.*/
     public static void checkHEADCommit(String fileName) throws IOException {
         /* Get the sha1 of head commit. */
-        String HeadSha1 = Utils.readContentsAsString(HEAD);
-        checkCommitFile(HeadSha1, fileName);
+        String headSha1 = Utils.readContentsAsString(HEAD);
+        checkCommitFile(headSha1, fileName);
     }
 
     /** Takes the version of the file as it exists in the commit with the given id,
@@ -326,10 +379,25 @@ public class Repository {
             /* Get the file's blob sha1 saved in the checked commit. */
             String blobSha1 = checkedCommit.getBlob(fileName);
             /* Copy the blob content to the file. */
-            Files.copy(Utils.join(BLOB, blobSha1).toPath(), Utils.join(CWD, fileName).toPath(), StandardCopyOption.REPLACE_EXISTING);
+            Files.copy(
+                    Utils.join(BLOB, blobSha1).toPath(),
+                    Utils.join(CWD, fileName).toPath(),
+                    StandardCopyOption.REPLACE_EXISTING
+            );
         } else {
             System.out.println("File does not exist in that commit.");
             System.exit(0);
         }
+    }
+
+    public static void newBranch(String newBranchName) {
+        Branch branch = Utils.readObject(BRANCH, Branch.class);
+        if (branch.branch.containsKey(newBranchName)){
+            System.out.println("A branch with that name already exists.");
+            System.exit(0);
+        }
+        branch.createNewBranch(newBranchName);
+        branch.save();
+
     }
 }
