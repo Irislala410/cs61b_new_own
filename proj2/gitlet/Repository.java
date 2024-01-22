@@ -3,7 +3,7 @@ package gitlet;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Paths;
+//import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -11,7 +11,6 @@ import java.util.List;
 
 import static gitlet.Utils.*;
 
-// TODO: any imports you need here
 
 /** Represents a gitlet repository.
  *  TODO: It's a good idea to give a description here of what else this Class
@@ -21,7 +20,6 @@ import static gitlet.Utils.*;
  */
 public class Repository {
     /**
-     * TODO: add instance variables here.
      *
      * List all instance variables of the Repository class here with a useful
      * comment above them describing what that variable represents and how that
@@ -57,13 +55,13 @@ public class Repository {
      * (one containing a .gitlet subdirectory)
      */
     public static void checkInitial() {
-        if (!GITLET_DIR.exists()){
+        if (!GITLET_DIR.exists()) {
             System.out.println("Not in an initialized Gitlet directory.");
             System.exit(0);
         }
     }
-    public static void validateNumArgs(String[] args, int num){
-        if (args.length != num){
+    public static void validateNumArgs(String[] args, int num) {
+        if (args.length != num) {
             System.out.println("Incorrect operands.");
             System.exit(0);
         }
@@ -72,7 +70,7 @@ public class Repository {
      * create .staging, .rmstaging, .blob, .commit for storing different files. Create
      * the initial commit.*/
     public static void setupPersistence() throws IOException {
-        if (!GITLET_DIR.exists()){
+        if (!GITLET_DIR.exists()) {
             GITLET_DIR.mkdir();
             STAGING.mkdir();
             RMSTAGING.mkdir();
@@ -83,7 +81,7 @@ public class Repository {
             HEAD.createNewFile();
             MASTER.createNewFile();
 
-            Commit initialCommit = new Commit("initial commit",null, "1-1-1970 00:00:00");
+            Commit initialCommit = new Commit("initial commit", null, "Thu Jan 1 00:00:00 1970 +0000");
             //write the commit into a file
             initialCommit.saveCommit(COMMIT);
         } else {
@@ -96,18 +94,18 @@ public class Repository {
         File fileToAdd = Utils.join(CWD, addFile);
         /*If the file does not exist, print the error message File does not exist.
          * and exit without changing anything.*/
-        if (!fileToAdd.exists()){
+        if (!fileToAdd.exists()) {
             System.out.println("File does not exist.");
             System.exit(0);
-        } else if (!fileInCurrentCommit(addFile)){
+        } else if (!fileInCurrentCommit(addFile)) {
             // if file exist and not in current commit, stage it and remove it if it is in removal area;
             Files.copy(fileToAdd.toPath(), Utils.join(STAGING, addFile).toPath(), StandardCopyOption.REPLACE_EXISTING);
             removeFromRMSTAGING(addFile);
-        } else if (!sameContentInCurrentCommit(addFile) ){
+        } else if (!sameContentInCurrentCommit(addFile)) {
             // if it is in current commit but not the same, stage it and remove it if it is in removal area;
             Files.copy(fileToAdd.toPath(), Utils.join(STAGING, addFile).toPath(), StandardCopyOption.REPLACE_EXISTING);
             removeFromRMSTAGING(addFile);
-        } else if (Utils.join(STAGING, addFile).exists()){ //this line was else if (fileInStagingArea(addFile)){
+        } else if (Utils.join(STAGING, addFile).exists()) { //this line was else if (fileInStagingArea(addFile)){
             //if it is in current commit and the same, delete it from staging if it is there.
             Utils.restrictedDelete(Utils.join(STAGING, addFile));
         }
@@ -115,7 +113,7 @@ public class Repository {
 
     }
     /** Return if the file is in current commit. */
-    public static boolean fileInCurrentCommit(String fileName) throws IOException{
+    public static boolean fileInCurrentCommit(String fileName) {
         // get the sha1 of the current commit from HEAD file
         String currentCommitSha1 = Utils.readContentsAsString(HEAD);
         // read commit object from Commit directory
@@ -123,7 +121,7 @@ public class Repository {
         return currentCommit.containFile(fileName);
     }
     /** Remove the file from RMSTAGING directory if it is there. */
-    public static void removeFromRMSTAGING(String fileToRm) throws IOException {
+    public static void removeFromRMSTAGING(String fileToRm) {
         List<String> filesInRm = plainFilenamesIn(RMSTAGING);
         if (filesInRm.contains(fileToRm)) {
             Utils.restrictedDelete(Utils.join(RMSTAGING, fileToRm));
@@ -131,7 +129,7 @@ public class Repository {
     }
 
     /** Return if the file is the same with its version in current commit. */
-    public static boolean sameContentInCurrentCommit(String fileName) throws IOException{
+    public static boolean sameContentInCurrentCommit(String fileName) {
         String fileString = Utils.readContentsAsString(Utils.join(CWD, fileName));
         String fileSha1 = Utils.sha1(fileString);
         // get the sha1 of the current commit from HEAD file
@@ -150,7 +148,7 @@ public class Repository {
     /** Create a new commit with the message the user provided. */
     public static void newCommit(String message) throws IOException {
         /* if staging area is empty, print message and exit. */
-        if (Utils.plainFilenamesIn(STAGING).isEmpty()){
+        if (Utils.plainFilenamesIn(STAGING).isEmpty()) {
             System.out.println("No changes added to the commit.");
             System.exit(0);
         } else if (message.length() == 0) {
@@ -166,13 +164,13 @@ public class Repository {
             newCommit.filenameBlob = parentCommit.filenameBlob;
             /* Update the saved files with staging area. */
             List<String> addedFiles = Utils.plainFilenamesIn(STAGING);
-            for (String addedFile: addedFiles){
+            for (String addedFile: addedFiles) {
                 String blobSha1 = getBlobSha1(addedFile);
                 newCommit.filenameBlob.put(addedFile, blobSha1);
             }
             /* Remove the saved file in remove staging area. */
             List<String> rmFiles = Utils.plainFilenamesIn(RMSTAGING);
-            for (String rmFile: rmFiles){
+            for (String rmFile: rmFiles) {
                 newCommit.filenameBlob.remove(rmFile);
             }
 
@@ -184,9 +182,9 @@ public class Repository {
     }
 
     /** Get system time as String. */
-    public static String getTimeStamp(){
+    public static String getTimeStamp() {
         LocalDateTime currentTime = LocalDateTime.now();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM-dd-yyyy HH:mm:ss");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEE MMM dd HH:mm:ss yyyy Z");
         String timeStamp = currentTime.format(formatter);
         return timeStamp;
 
@@ -208,7 +206,7 @@ public class Repository {
     /** CLear staging area. */
     public static void clearStaging() throws IOException {
         List<String> addedFiles = Utils.plainFilenamesIn(STAGING);
-        for (String addedFile: addedFiles){
+        for (String addedFile: addedFiles) {
             Utils.join(STAGING, addedFile).delete();
         }
     }
@@ -216,7 +214,7 @@ public class Repository {
     /** CLear remove staging area. */
     public static void clearRMStaging() throws IOException {
         List<String> rmFiles = Utils.plainFilenamesIn(RMSTAGING);
-        for (String rmFile: rmFiles){
+        for (String rmFile: rmFiles) {
             Utils.restrictedDelete(Utils.join(RMSTAGING, rmFile));
         }
     }
@@ -226,13 +224,13 @@ public class Repository {
     public static void removeFile(String fileName) throws IOException {
         int flag = 0; // flag for failure case.
         /* If the file is in staging area, delete it. */
-        if (Utils.join(STAGING, fileName).exists()){
+        if (Utils.join(STAGING, fileName).exists()) {
             Utils.join(STAGING, fileName).delete();
             flag = 1;
         }
         /* If the file is in the current commit, add it to RMSTAGING for removing in
          * the next commit and remove if from the working directory if it is there. */
-        if (fileInCurrentCommit(fileName)){
+        if (fileInCurrentCommit(fileName)) {
             /* Create a file with the same name for removing in the next commit.
              * The file content doesn't matter. */
             Utils.join(RMSTAGING, fileName).createNewFile();
@@ -242,7 +240,7 @@ public class Repository {
             flag = 1;
         }
         /* if the above two cases are both failed then print failure message. */
-        if (flag == 0){
+        if (flag == 0) {
             System.out.println("No reason to remove the file. ");
         }
     }
@@ -253,14 +251,14 @@ public class Repository {
     }
 
     /** Print out the commit information till initial commit. Without considering merge.*/
-    public static void printLog(String commitSha1) throws IOException {
+    public static void printLog(String commitSha1) {
         Commit printCommit = Utils.readObject(Utils.join(COMMIT, commitSha1), Commit.class);
         System.out.println("===");
         System.out.println("commit " + commitSha1);
-        System.out.println("Date: "+ printCommit.getDate());
+        System.out.println("Date: " + printCommit.getDate());
         System.out.println(printCommit.getMessage());
         System.out.println();
-        if (printCommit.getParent() != null){
+        if (printCommit.getParent() != null) {
             printLog(printCommit.getParent());
         }
     }
@@ -268,7 +266,7 @@ public class Repository {
     /** Print out all the commits' information. */
     public static void globalLog() throws IOException {
         List<String> allCommits = Utils.plainFilenamesIn(COMMIT);
-        for (String commitSha1 : allCommits){
+        for (String commitSha1 : allCommits) {
             if (!commitSha1.equals("tempOutFile")) {
                 Commit printCommit = Utils.readObject(Utils.join(COMMIT, commitSha1), Commit.class);
                 System.out.println("===");
@@ -282,7 +280,7 @@ public class Repository {
     /** Prints out the ids of all commits that have the given commit message */
     public static void find(String findMessage) throws IOException {
         List<String> allCommits = Utils.plainFilenamesIn(COMMIT);
-        for (String commitSha1 : allCommits){
+        for (String commitSha1 : allCommits) {
             if (!commitSha1.equals("tempOutFile")) {
                 Commit printCommit = Utils.readObject(Utils.join(COMMIT, commitSha1), Commit.class);
                 if (printCommit.getMessage().equals(findMessage)) {
@@ -292,7 +290,7 @@ public class Repository {
         }
     }
     /** Print out the status information.*/
-    public static void status(){
+    public static void status() {
 
     }
 
@@ -301,8 +299,8 @@ public class Repository {
      * there if there is one. The new version of the file is not staged.*/
     public static void checkHEADCommit(String fileName) throws IOException {
         /* Get the sha1 of head commit. */
-        String HEADSha1 = Utils.readContentsAsString(HEAD);
-        checkCommitFile(HEADSha1, fileName);
+        String HeadSha1 = Utils.readContentsAsString(HEAD);
+        checkCommitFile(HeadSha1, fileName);
     }
 
     /** Takes the version of the file as it exists in the commit with the given id,
@@ -312,7 +310,7 @@ public class Repository {
     public static void checkSpecificCommit(String commitId, String fileName) throws IOException {
         List<String> files = Utils.plainFilenamesIn(COMMIT);
         /* Check if the commit id exists*/
-        if (files.contains(commitId)){
+        if (files.contains(commitId)) {
             String commitSha1 = Utils.readContentsAsString(Utils.join(COMMIT, commitId));
             checkCommitFile(commitSha1, fileName);
         } else {
@@ -326,7 +324,7 @@ public class Repository {
     public static void checkCommitFile(String commitSha1, String fileName) throws IOException {
         /* Get the checked commit by its sha1. */
         Commit checkedCommit = Utils.readObject(Utils.join(COMMIT, commitSha1), Commit.class);
-        if (checkedCommit.containFile(fileName)){
+        if (checkedCommit.containFile(fileName)) {
             /* Get the file's blob sha1 saved in the checked commit. */
             String blobSha1 = checkedCommit.getBlob(fileName);
             /* Copy the blob content to the file. */

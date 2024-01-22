@@ -1,11 +1,9 @@
 package gitlet;
 
-// TODO: any imports you need here
-
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.Date; // TODO: You'll likely use this in this class
+//import java.util.Date; // TODO: You'll likely use this in this class
 import java.util.HashMap;
 
 import static gitlet.Utils.writeObject;
@@ -18,7 +16,6 @@ import static gitlet.Utils.writeObject;
  */
 public class Commit implements Serializable {
     /**
-     * TODO: add instance variables here.
      *
      * List all instance variables of the Commit class here with a useful
      * comment above them describing what that variable represents and how that
@@ -34,13 +31,12 @@ public class Commit implements Serializable {
     /** contains the file names and their blobs in the commit.*/
     public HashMap<String, String> filenameBlob;
 
-    /* TODO: fill in the rest of this class. */
     /** Constructor for Commit class.
     * @param message: the commit message provided by the user.
     * @param parent: the SHA - 1 hash of the parent commit.
     * @param timestamp: the timestamp of the commit.
     * */
-    public Commit(String message, String parent, String timestamp){
+    public Commit(String message, String parent, String timestamp) {
         this.message = message;
         this.parent = parent;
         this.timestamp = timestamp;
@@ -58,7 +54,7 @@ public class Commit implements Serializable {
         String commitString = Utils.readContentsAsString(tempOutFile);
         String commitSha1 = Utils.sha1(commitString);
         File outFile = Utils.join(saveCommitDIR, commitSha1);
-        if (!outFile.exists()){
+        if (!outFile.exists()) {
             outFile.createNewFile();
             writeObject(outFile, this); // the saved commit object
         }
@@ -68,29 +64,29 @@ public class Commit implements Serializable {
     }
 
     /** Update the master pointer. */
-    public static void updateMaster(String commitSha1) throws IOException{
+    public static void updateMaster(String commitSha1) {
         Utils.writeContents(Repository.MASTER, commitSha1);
     }
 
     /** Update the HEAD pointer. */
-    public static void updateHEAD(String commitSha1) throws IOException{
+    public static void updateHEAD(String commitSha1) {
         Utils.writeContents(Repository.HEAD, commitSha1);
     }
 
     /** Return if the commit contains file: fileName. */
-    public boolean containFile(String fileName) throws IOException {
+    public boolean containFile(String fileName) {
         return this.filenameBlob.containsKey(fileName);
     }
 
-    public String getBlob(String fileName) throws IOException {
+    public String getBlob(String fileName) {
         return this.filenameBlob.get(fileName);
     }
 
-    public String getMessage(){ return this.message; }
+    public String getMessage() { return this.message; }
 
-    public String getParent(){ return this.parent; }
+    public String getParent() { return this.parent; }
 
-    public String getDate(){ return this.timestamp;}
+    public String getDate() { return this.timestamp; }
 
 
 }
