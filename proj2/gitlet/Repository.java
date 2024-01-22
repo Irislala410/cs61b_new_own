@@ -13,7 +13,6 @@ import static gitlet.Utils.*;
 
 
 /** Represents a gitlet repository.
- *  TODO: It's a good idea to give a description here of what else this Class
  *  does at a high level.
  *
  *  @author Ruo Liang
@@ -49,7 +48,6 @@ public class Repository {
 
 
 
-    /* TODO: fill in the rest of this class. */
     /**
      * Check if the working dictionary is an initialized Gitlet working dictionary
      * (one containing a .gitlet subdirectory)
@@ -184,7 +182,7 @@ public class Repository {
     /** Get system time as String. */
     public static String getTimeStamp() {
         LocalDateTime currentTime = LocalDateTime.now();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEE MMM dd HH:mm:ss yyyy Z");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEE MMM dd HH:mm:ss yyyy");
         String timeStamp = currentTime.format(formatter);
         return timeStamp;
 
