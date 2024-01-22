@@ -103,8 +103,8 @@ public class Repository {
 
 
         } else {
-            System.out.println("A Gitlet version-control system already exists " +
-                    "in the current directory.");
+            System.out.println("A Gitlet version-control system already exists "
+                    + "in the current directory.");
             System.exit(0);
         }
     }
@@ -117,7 +117,8 @@ public class Repository {
             System.out.println("File does not exist.");
             System.exit(0);
         } else if (!fileInCurrentCommit(addFile)) {
-            // if file exist and not in current commit, stage it and remove it if it is in removal area;
+            // if file exist and not in current commit, stage it and remove it if
+            // it is in removal area;
             Files.copy(
                     fileToAdd.toPath(),
                     Utils.join(STAGING, addFile).toPath(),
@@ -125,15 +126,18 @@ public class Repository {
             );
             removeFromRMSTAGING(addFile);
         } else if (!sameContentInCurrentCommit(addFile)) {
-            // if it is in current commit but not the same, stage it and remove it if it is in removal area;
+            // if it is in current commit but not the same, stage it and remove
+            // it if it is in removal area;
             Files.copy(
                     fileToAdd.toPath(),
                     Utils.join(STAGING, addFile).toPath(),
                     StandardCopyOption.REPLACE_EXISTING
             );
             removeFromRMSTAGING(addFile);
-        } else if (Utils.join(STAGING, addFile).exists()) { //this line was else if (fileInStagingArea(addFile)){
-            //if it is in current commit and the same, delete it from staging if it is there.
+        } else if (Utils.join(STAGING, addFile).exists()) { //this line was else
+            // if (fileInStagingArea(addFile)){
+            //if it is in current commit and the same, delete it from staging if
+            // it is there.
             Utils.restrictedDelete(Utils.join(STAGING, addFile));
         }
 
@@ -162,7 +166,10 @@ public class Repository {
         // get the sha1 of the current commit from HEAD file
         String currentCommitSha1 = Utils.readContentsAsString(HEAD);
         // read commit object from Commit directory
-        Commit currentCommit = Utils.readObject(Utils.join(COMMIT, currentCommitSha1), Commit.class);
+        Commit currentCommit = Utils.readObject(
+                Utils.join(COMMIT, currentCommitSha1),
+                Commit.class
+                );
         String commitFileSha1 = currentCommit.getBlob(fileName);
         return fileSha1.equals(commitFileSha1);
     }
@@ -330,22 +337,33 @@ public class Repository {
         //Print other branches.
         Set<String> branches = branch.branch.keySet();
         for (String aBranch : branches) {
-            if (!aBranch.equals(activeBranch)){
+            if (!aBranch.equals(activeBranch) && !aBranch.equals("head")) {
                 System.out.println(aBranch);
             }
         }
+        System.out.println();
+
         /* Print out staged files*/
         System.out.println("===" + " Staged Files " + "===");
         List<String> stagedFiles = Utils.plainFilenamesIn(STAGING);
-        for(String stagedFile : stagedFiles) {
+        for (String stagedFile : stagedFiles) {
             System.out.println(stagedFile);
         }
+        System.out.println();
+
         /* Print out Removed files*/
         System.out.println("===" + " Removed Files " + "===");
         List<String> removedFiles = Utils.plainFilenamesIn(RMSTAGING);
-        for(String removedFile : removedFiles) {
+        for (String removedFile : removedFiles) {
             System.out.println(removedFile);
         }
+        System.out.println();
+
+        System.out.println("===" + " Modifications Not Staged For Commit " + "===");
+        System.out.println();
+
+        System.out.println("===" + " Untracked Files " + "===");
+        System.out.println();
     }
 
     /** Takes the version of the file as it exists in the head commit and puts it in
@@ -394,7 +412,7 @@ public class Repository {
 
     public static void newBranch(String newBranchName) {
         Branch branch = Utils.readObject(BRANCH, Branch.class);
-        if (branch.branch.containsKey(newBranchName)){
+        if (branch.branch.containsKey(newBranchName)) {
             System.out.println("A branch with that name already exists.");
             System.exit(0);
         }
