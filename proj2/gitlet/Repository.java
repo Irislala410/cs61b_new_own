@@ -185,10 +185,12 @@ public class Repository {
     /** Create a new commit with the message the user provided. */
     public static void newCommit(String message) throws IOException {
         /* if staging area and remove staging area are both empty, print message and exit. */
-        if (Utils.plainFilenamesIn(STAGING).isEmpty() && Utils.plainFilenamesIn(RMSTAGING).isEmpty()) {
+        if (Utils.plainFilenamesIn(STAGING).isEmpty()
+                && Utils.plainFilenamesIn(RMSTAGING).isEmpty()) {
             System.out.println("No changes added to the commit.");
             System.exit(0);
-        } else if (message.length() == 0) {
+        }
+        if (message.length() == 0) {
             /* if message is empty, print message and exit. */
             System.out.println("Please enter a commit message.");
             System.exit(0);
@@ -252,10 +254,11 @@ public class Repository {
     }
 
     /** CLear remove staging area. */
-    public static void clearRMStaging() throws IOException {
+    public static void clearRMStaging() {
         List<String> rmFiles = Utils.plainFilenamesIn(RMSTAGING);
         for (String rmFile: rmFiles) {
-            Utils.restrictedDelete(Utils.join(RMSTAGING, rmFile));
+//            Utils.restrictedDelete(Utils.join(RMSTAGING, rmFile));
+            Utils.restrictedDelete(rmFile);
         }
     }
 
