@@ -257,8 +257,8 @@ public class Repository {
     public static void clearRMStaging() {
         List<String> rmFiles = Utils.plainFilenamesIn(RMSTAGING);
         for (String rmFile: rmFiles) {
-//            Utils.restrictedDelete(Utils.join(RMSTAGING, rmFile));
-            Utils.restrictedDelete(rmFile);
+            Utils.join(RMSTAGING, rmFile).delete();
+//            Utils.restrictedDelete(rmFile);
         }
     }
 
