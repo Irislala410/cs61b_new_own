@@ -116,7 +116,19 @@ public class Repository {
         if (!fileToAdd.exists()) {
             System.out.println("File does not exist.");
             System.exit(0);
-        } else if (!fileInCurrentCommit(addFile)) {
+        }
+        /*If the same file exits in RMStaging folder then this command means to cancel
+        * the removal and doesn't stage the file. */
+        File removedFile = Utils.join(RMSTAGING, addFile);
+        if (removedFile.exists()) {
+            String removedFileStr = Utils.readContentsAsString(removedFile);
+            String fileToAddStr = Utils.readContentsAsString(fileToAdd);
+            if (removedFileStr.equals(fileToAddStr)) {
+                removedFile.delete();
+                System.exit(0);
+            }
+        }
+        if (!fileInCurrentCommit(addFile)) {
             // if file exist and not in current commit, stage it and remove it if
             // it is in removal area;
             Files.copy(
@@ -178,7 +190,7 @@ public class Repository {
     }
 
     /** Return if the file is in staging area. */
-    public static boolean fileInStagingArea(String fileName) throws IOException {
+    public static boolean fileInStagingArea(String fileName) {
         List<String> stagingFiles = Utils.plainFilenamesIn(STAGING);
         return stagingFiles.contains(fileName);
     }
@@ -245,15 +257,15 @@ public class Repository {
         return addedFileSha1;
     }
 
-    /** CLear staging area. */
-    public static void clearStaging() throws IOException {
+    /** Clear staging area. */
+    public static void clearStaging() {
         List<String> addedFiles = Utils.plainFilenamesIn(STAGING);
         for (String addedFile: addedFiles) {
             Utils.join(STAGING, addedFile).delete();
         }
     }
 
-    /** CLear remove staging area. */
+    /** Clear remove staging area. */
     public static void clearRMStaging() {
         List<String> rmFiles = Utils.plainFilenamesIn(RMSTAGING);
         for (String rmFile: rmFiles) {
