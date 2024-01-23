@@ -124,7 +124,8 @@ public class Repository {
             String removedFileStr = Utils.readContentsAsString(removedFile);
             String fileToAddStr = Utils.readContentsAsString(fileToAdd);
             if (removedFileStr.equals(fileToAddStr)) {
-                removedFile.delete();
+//                removedFile.delete();
+                removeFromRMSTAGING(addFile);
                 System.exit(0);
             }
         }
