@@ -148,7 +148,10 @@ public class Repository {
         // get the sha1 of the current commit from HEAD file
         String currentCommitSha1 = Utils.readContentsAsString(HEAD);
         // read commit object from Commit directory
-        Commit currentCommit = Utils.readObject(Utils.join(COMMIT, currentCommitSha1), Commit.class);
+        Commit currentCommit = Utils.readObject(
+                Utils.join(COMMIT, currentCommitSha1),
+                Commit.class
+                );
         return currentCommit.containFile(fileName);
     }
     /** Remove the file from RMSTAGING directory if it is there. */
@@ -181,8 +184,8 @@ public class Repository {
     }
     /** Create a new commit with the message the user provided. */
     public static void newCommit(String message) throws IOException {
-        /* if staging area is empty, print message and exit. */
-        if (Utils.plainFilenamesIn(STAGING).isEmpty()) {
+        /* if staging area and remove staging area are both empty, print message and exit. */
+        if (Utils.plainFilenamesIn(STAGING).isEmpty() && Utils.plainFilenamesIn(RMSTAGING).isEmpty()) {
             System.out.println("No changes added to the commit.");
             System.exit(0);
         } else if (message.length() == 0) {
