@@ -466,7 +466,7 @@ public class Repository {
             System.exit(0);
         }
         // The given branch is already the current branch.
-        if (branch.branch.get("head") == branchName) {
+        if (branch.branch.get("head").equals(branchName)) {
             System.out.println("No need to checkout the current branch.");
             System.exit(0);
         }
