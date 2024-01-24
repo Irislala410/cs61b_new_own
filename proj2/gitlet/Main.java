@@ -80,7 +80,7 @@ public class Main {
                         Repository.checkHEADCommit(args[2]);
                     }
                     if (args.length == 4) {
-                        Repository.checkSpecificCommit(args[1], args[3]);
+                        Repository.checkSpecificCommit(args[1], args[2], args[3]);
 
                     }
                     if (args.length == 2) {

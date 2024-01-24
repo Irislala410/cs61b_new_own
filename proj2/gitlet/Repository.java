@@ -410,8 +410,12 @@ public class Repository {
      * and puts it in the working directory, overwriting the version of the file
      * that’s already there if there is one. The new version of the file is not
      * staged.*/
-    public static void checkSpecificCommit(String commitId, String fileName) throws IOException {
-        List<String> files = Utils.plainFilenamesIn(COMMIT);
+    public static void checkSpecificCommit(String commitId, String operand, String fileName) throws IOException {
+        if (operand != "--") {
+            System.out.println("Incorrect operands.");
+            System.exit(0);
+        }
+        List<String> files = plainFilenamesIn(COMMIT);
         /* Check if the commit id exists*/
         if (files.contains(commitId)) {
             checkCommitFile(commitId, fileName);
@@ -472,7 +476,7 @@ public class Repository {
         List<String> currFiles = plainFilenamesIn(CWD);
         for (String currFile : currFiles) {
             // A file in CWD but not in current commit, then it is an untracked file.
-            if (currCommit.containFile(currFile)) {
+            if (!currCommit.containFile(currFile)) {
                 System.out.println("There is an untracked file in the way; delete it, "
                         + "or add and commit it first.");
                 System.exit(0);
@@ -494,6 +498,8 @@ public class Repository {
             pasteFile.createNewFile();
             writeContents(pasteFile, copyFileSHA1);
         }
+        // Update HEAD to the checked branch.
+        branch.branch.put("head", branchName);
 
 
     }
