@@ -410,8 +410,9 @@ public class Repository {
      * and puts it in the working directory, overwriting the version of the file
      * that’s already there if there is one. The new version of the file is not
      * staged.*/
-    public static void checkSpecificCommit(String commitId, String operand, String fileName) throws IOException {
-        if (operand != "--") {
+    public static void checkSpecificCommit(String commitId, String operand, String fileName)
+            throws IOException {
+        if (!operand.equals("--")) {
             System.out.println("Incorrect operands.");
             System.exit(0);
         }
