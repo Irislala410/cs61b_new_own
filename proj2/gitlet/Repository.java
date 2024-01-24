@@ -217,7 +217,7 @@ public class Repository {
         Commit parentCommit = readObject(join(COMMIT, parent), Commit.class);
 //        newCommit.filenameBlob = parentCommit.filenameBlob; // in this way the two
 //        pointers point to a same hashmap.
-        newCommit.filenameBlob = new HashMap<>(parentCommit.filenameBlob);
+        newCommit.filenameBlob = new HashMap<>();
         /* Update the saved files with staging area. */
         List<String> addedFiles = plainFilenamesIn(STAGING);
         for (String addedFile: addedFiles) {
