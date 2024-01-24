@@ -3,7 +3,7 @@ package gitlet;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import static gitlet.Utils. *;
+import static gitlet.Utils.*;
 //import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 //import java.time.LocalDateTime;
@@ -470,16 +470,16 @@ public class Repository {
         String currCommitSHA1 = branch.branch.get(activeBranch);
         Commit currCommit = readObject(join(COMMIT, currCommitSHA1), Commit.class);
         List<String> currFiles = plainFilenamesIn(CWD);
-        for (String currFile : currFiles){
+        for (String currFile : currFiles) {
             // A file in CWD but not in current commit, then it is an untracked file.
-            if (currCommit.containFile(currFile)){
+            if (currCommit.containFile(currFile)) {
                 System.out.println("There is an untracked file in the way; delete it, "
                         + "or add and commit it first.");
                 System.exit(0);
             }
         }
         //Clear CWD and copy files from checked branch.
-        for (String currFile : currFiles){
+        for (String currFile : currFiles) {
             join(CWD, currFile).delete();
         }
         String checkedCommitSHA1 = branch.branch.get(branchName);
