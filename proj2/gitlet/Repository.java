@@ -460,18 +460,19 @@ public class Repository {
      * considered the current branch (HEAD). */
     public static void checkBranch(String branchName) throws IOException {
         Branch branch = readObject(BRANCH, Branch.class);
+        String activeBranch = branch.branch.get("head");
         // The given branch doesn't exist.
         if (!branch.branch.containsKey(branchName)) {
             System.out.println("No such branch exists.");
             System.exit(0);
         }
         // The given branch is already the current branch.
-        if (branch.branch.get("head").equals(branchName)) {
+        if (activeBranch.equals(branchName)) {
             System.out.println("No need to checkout the current branch.");
             System.exit(0);
         }
         // Check if there is untracked files.
-        String activeBranch = branch.branch.get("head");
+
         String currCommitSHA1 = branch.branch.get(activeBranch);
         Commit currCommit = readObject(join(COMMIT, currCommitSHA1), Commit.class);
         List<String> currFiles = plainFilenamesIn(CWD);
@@ -501,6 +502,7 @@ public class Repository {
         }
         // Update HEAD to the checked branch.
         branch.branch.put("head", branchName);
+        branch.save();
 
 
     }
