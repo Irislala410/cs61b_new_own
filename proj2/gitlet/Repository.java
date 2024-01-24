@@ -3,15 +3,15 @@ package gitlet;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import static gitlet.Utils. *;
 //import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 //import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
-
-import static gitlet.Utils.*;
 
 
 /** Represents a gitlet repository.
@@ -99,7 +99,7 @@ public class Repository {
             initialBranch.save();
 
             //write the commit into a file. Branch Updating is made in .saveCommit.
-            initialCommit.saveCommit(COMMIT);
+            initialCommit.saveCommit();
 
 
         } else {
@@ -119,14 +119,15 @@ public class Repository {
         }
         /*If the same file exits in RMStaging folder then this command means to cancel
         * the removal and doesn't stage the file. */
-        File removedFile = Utils.join(RMSTAGING, addFile);
+        File removedFile = join(RMSTAGING, addFile);
         if (removedFile.exists()) {
             String removedFileStr = Utils.readContentsAsString(removedFile);
             String fileToAddStr = Utils.readContentsAsString(fileToAdd);
             if (removedFileStr.equals(fileToAddStr)) {
 //                removedFile.delete();
-                Utils.join(RMSTAGING, addFile).delete();
+//                join(RMSTAGING, addFile).delete();
 //                removeFromRMSTAGING(addFile);
+                Files.delete(removedFile.toPath());
                 System.exit(0);
             }
         }
@@ -135,7 +136,7 @@ public class Repository {
             // it is in removal area;
             Files.copy(
                     fileToAdd.toPath(),
-                    Utils.join(STAGING, addFile).toPath(),
+                    join(STAGING, addFile).toPath(),
                     StandardCopyOption.REPLACE_EXISTING
             );
             removeFromRMSTAGING(addFile);
@@ -193,14 +194,14 @@ public class Repository {
 
     /** Return if the file is in staging area. */
     public static boolean fileInStagingArea(String fileName) {
-        List<String> stagingFiles = Utils.plainFilenamesIn(STAGING);
+        List<String> stagingFiles = plainFilenamesIn(STAGING);
         return stagingFiles.contains(fileName);
     }
     /** Create a new commit with the message the user provided. */
     public static void newCommit(String message) throws IOException {
         /* if staging area and remove staging area are both empty, print message and exit. */
-        if (Utils.plainFilenamesIn(STAGING).isEmpty()
-                && Utils.plainFilenamesIn(RMSTAGING).isEmpty()) {
+        if (plainFilenamesIn(STAGING).isEmpty()
+                && plainFilenamesIn(RMSTAGING).isEmpty()) {
             System.out.println("No changes added to the commit.");
             System.exit(0);
         }
@@ -208,30 +209,34 @@ public class Repository {
             /* if message is empty, print message and exit. */
             System.out.println("Please enter a commit message.");
             System.exit(0);
-        } else {
-            String parent = Utils.readContentsAsString(HEAD);
-            String timeStamp = getTimeStamp();
-            Commit newCommit = new Commit(message, parent, timeStamp);
-            /* Read parent commit and get its saved files as new commit's saved files. */
-            Commit parentCommit = Utils.readObject(Utils.join(COMMIT, parent), Commit.class);
-            newCommit.filenameBlob = parentCommit.filenameBlob;
-            /* Update the saved files with staging area. */
-            List<String> addedFiles = Utils.plainFilenamesIn(STAGING);
-            for (String addedFile: addedFiles) {
-                String blobSha1 = getBlobSha1(addedFile);
-                newCommit.filenameBlob.put(addedFile, blobSha1);
-            }
-            /* Remove the saved file in remove staging area. */
-            List<String> rmFiles = Utils.plainFilenamesIn(RMSTAGING);
-            for (String rmFile: rmFiles) {
-                newCommit.filenameBlob.remove(rmFile);
-            }
-
-            clearStaging();
-            clearRMStaging();
-
-            newCommit.saveCommit(COMMIT);
         }
+        String parent = readContentsAsString(HEAD);
+        String timeStamp = getTimeStamp();
+        Commit newCommit = new Commit(message, parent, timeStamp);
+        /* Read parent commit and get its saved files as new commit's saved files. */
+        Commit parentCommit = readObject(join(COMMIT, parent), Commit.class);
+//        newCommit.filenameBlob = parentCommit.filenameBlob; // in this way the two
+//        pointers point to a same hashmap.
+        newCommit.filenameBlob = new HashMap<>(parentCommit.filenameBlob);
+        /* Update the saved files with staging area. */
+        List<String> addedFiles = plainFilenamesIn(STAGING);
+        for (String addedFile: addedFiles) {
+            String blobSha1 = getBlobSha1(addedFile);
+            newCommit.filenameBlob.put(addedFile, blobSha1);
+        }
+        /* Remove the saved file in remove staging area. */
+        List<String> rmFiles = plainFilenamesIn(RMSTAGING);
+        for (String rmFile: rmFiles) {
+            newCommit.filenameBlob.remove(rmFile);
+        }
+
+        newCommit.saveCommit();
+
+        clearStaging();
+        clearRMStaging();
+
+//        newCommit.saveCommit();
+//        System.out.println("9");
     }
 
     /** Get system time as String. */
@@ -246,24 +251,25 @@ public class Repository {
     /** Get the blob Sha1 of the file in staging area. */
     public static String getBlobSha1(String addedFile) throws IOException {
         /* Get the sha1 of the added file in staging area. */
-        String addedFileString = Utils.readContentsAsString(Utils.join(STAGING, addedFile));
-        String addedFileSha1 = Utils.sha1(addedFileString);
+        String addedFileString = readContentsAsString(join(STAGING, addedFile));
+        String addedFileSha1 = sha1(addedFileString);
 //        /** Create the blob file in Blob directory with the same Sha1. */
 //        File newBlob = Utils.join(BLOB, addedFileSha1);
 //        newBlob.createNewFile();
         /* Copy the added file in staging area to the blob file. */
         Files.copy(
-                Utils.join(STAGING, addedFile).toPath(),
-                Utils.join(BLOB, addedFileSha1).toPath()
+                join(STAGING, addedFile).toPath(),
+                join(BLOB, addedFileSha1).toPath(),
+                StandardCopyOption.REPLACE_EXISTING
         );
         return addedFileSha1;
     }
 
     /** Clear staging area. */
     public static void clearStaging() {
-        List<String> addedFiles = Utils.plainFilenamesIn(STAGING);
+        List<String> addedFiles = plainFilenamesIn(STAGING);
         for (String addedFile: addedFiles) {
-            Utils.join(STAGING, addedFile).delete();
+            join(STAGING, addedFile).delete();
         }
     }
 
@@ -281,8 +287,8 @@ public class Repository {
     public static void removeFile(String fileName) throws IOException {
         int flag = 0; // flag for failure case.
         /* If the file is in staging area, delete it. */
-        if (Utils.join(STAGING, fileName).exists()) {
-            Utils.join(STAGING, fileName).delete();
+        if (join(STAGING, fileName).exists()) {
+            join(STAGING, fileName).delete();
             flag = 1;
         }
         /* If the file is in the current commit, add it to RMSTAGING for removing in
@@ -290,9 +296,9 @@ public class Repository {
         if (fileInCurrentCommit(fileName)) {
             /* Create a file with the same name for removing in the next commit.
              * The file content doesn't matter. */
-            Utils.join(RMSTAGING, fileName).createNewFile();
-            if (Utils.join(CWD, fileName).exists()) {
-                Utils.restrictedDelete(Utils.join(CWD, fileName));
+            join(RMSTAGING, fileName).createNewFile();
+            if (join(CWD, fileName).exists()) {
+                restrictedDelete(join(CWD, fileName));
             }
             flag = 1;
         }
@@ -309,7 +315,7 @@ public class Repository {
 
     /** Print out the commit information till initial commit. Without considering merge.*/
     public static void printLog(String commitSha1) {
-        Commit printCommit = Utils.readObject(Utils.join(COMMIT, commitSha1), Commit.class);
+        Commit printCommit = readObject(join(COMMIT, commitSha1), Commit.class);
         System.out.println("===");
         System.out.println("commit " + commitSha1);
         System.out.println("Date: " + printCommit.getDate());
@@ -322,10 +328,10 @@ public class Repository {
 
     /** Print out all the commits' information. */
     public static void globalLog() throws IOException {
-        List<String> allCommits = Utils.plainFilenamesIn(COMMIT);
+        List<String> allCommits = plainFilenamesIn(COMMIT);
         for (String commitSha1 : allCommits) {
             if (!commitSha1.equals("tempOutFile")) {
-                Commit printCommit = Utils.readObject(Utils.join(COMMIT, commitSha1), Commit.class);
+                Commit printCommit = readObject(Utils.join(COMMIT, commitSha1), Commit.class);
                 System.out.println("===");
                 System.out.println("commit " + commitSha1);
                 System.out.println("Date: " + printCommit.getDate());
@@ -350,7 +356,7 @@ public class Repository {
     public static void status() {
         /* Print out branches. */
         System.out.println("===" + " Branches " + "===");
-        Branch branch = Utils.readObject(BRANCH, Branch.class);
+        Branch branch = readObject(BRANCH, Branch.class);
         // Print active branch.
         String activeBranch = branch.branch.get("head");
         System.out.println("*" + activeBranch);
@@ -365,7 +371,7 @@ public class Repository {
 
         /* Print out staged files*/
         System.out.println("===" + " Staged Files " + "===");
-        List<String> stagedFiles = Utils.plainFilenamesIn(STAGING);
+        List<String> stagedFiles = plainFilenamesIn(STAGING);
         for (String stagedFile : stagedFiles) {
             System.out.println(stagedFile);
         }
@@ -373,7 +379,7 @@ public class Repository {
 
         /* Print out Removed files*/
         System.out.println("===" + " Removed Files " + "===");
-        List<String> removedFiles = Utils.plainFilenamesIn(RMSTAGING);
+        List<String> removedFiles = plainFilenamesIn(RMSTAGING);
         for (String removedFile : removedFiles) {
             System.out.println(removedFile);
         }
@@ -391,7 +397,7 @@ public class Repository {
      * there if there is one. The new version of the file is not staged.*/
     public static void checkHEADCommit(String fileName) throws IOException {
         /* Get the sha1 of head commit. */
-        String headSha1 = Utils.readContentsAsString(HEAD);
+        String headSha1 = readContentsAsString(HEAD);
         checkCommitFile(headSha1, fileName);
     }
 
@@ -414,14 +420,14 @@ public class Repository {
      * print error message and exit. */
     public static void checkCommitFile(String commitSha1, String fileName) throws IOException {
         /* Get the checked commit by its sha1. */
-        Commit checkedCommit = Utils.readObject(Utils.join(COMMIT, commitSha1), Commit.class);
+        Commit checkedCommit = readObject(join(COMMIT, commitSha1), Commit.class);
         if (checkedCommit.containFile(fileName)) {
             /* Get the file's blob sha1 saved in the checked commit. */
             String blobSha1 = checkedCommit.getBlob(fileName);
             /* Copy the blob content to the file. */
             Files.copy(
-                    Utils.join(BLOB, blobSha1).toPath(),
-                    Utils.join(CWD, fileName).toPath(),
+                    join(BLOB, blobSha1).toPath(),
+                    join(CWD, fileName).toPath(),
                     StandardCopyOption.REPLACE_EXISTING
             );
         } else {
@@ -431,13 +437,59 @@ public class Repository {
     }
 
     public static void newBranch(String newBranchName) {
-        Branch branch = Utils.readObject(BRANCH, Branch.class);
+        Branch branch = readObject(BRANCH, Branch.class);
         if (branch.branch.containsKey(newBranchName)) {
             System.out.println("A branch with that name already exists.");
             System.exit(0);
         }
         branch.createNewBranch(newBranchName);
         branch.save();
+
+    }
+    /** Checkout to a head of specific branch. The given branch will now be
+     * considered the current branch (HEAD). */
+    public static void checkBranch(String branchName) throws IOException {
+        Branch branch = readObject(BRANCH, Branch.class);
+        // The given branch doesn't exist.
+        if (!branch.branch.containsKey(branchName)) {
+            System.out.println("No such branch exists.");
+            System.exit(0);
+        }
+        // The given branch is already the current branch.
+        if (branch.branch.get("head") == branchName) {
+            System.out.println("No need to checkout the current branch.");
+            System.exit(0);
+        }
+        // Check if there is untracked files.
+        String activeBranch = branch.branch.get("head");
+        String currCommitSHA1 = branch.branch.get(activeBranch);
+        Commit currCommit = readObject(join(COMMIT, currCommitSHA1), Commit.class);
+        List<String> currFiles = plainFilenamesIn(CWD);
+        for (String currFile : currFiles){
+            // A file in CWD but not in current commit, then it is an untracked file.
+            if (currCommit.containFile(currFile)){
+                System.out.println("There is an untracked file in the way; delete it, "
+                        + "or add and commit it first.");
+                System.exit(0);
+            }
+        }
+        //Clear CWD and copy files from checked branch.
+        for (String currFile : currFiles){
+            join(CWD, currFile).delete();
+        }
+        String checkedCommitSHA1 = branch.branch.get(branchName);
+        Commit checkedCommit = readObject(join(COMMIT, checkedCommitSHA1), Commit.class);
+        // Get checked files from commit.
+        Set<String> checkedFiles = checkedCommit.filenameBlob.keySet();
+        for (String copyFile : checkedFiles) {
+            String fileSHA1 = checkedCommit.getBlob(copyFile);
+            byte[] copyFileSHA1 = readContents(join(BLOB, fileSHA1));
+            //Create new file in CWD and paste file from commit to it.
+            File pasteFile = join(CWD, copyFile);
+            pasteFile.createNewFile();
+            writeContents(pasteFile, copyFileSHA1);
+        }
+
 
     }
 }

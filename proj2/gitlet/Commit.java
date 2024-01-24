@@ -43,16 +43,16 @@ public class Commit implements Serializable {
     }
 
     /** Write commit into a file whose name is the sha1 of the commit. */
-    public void saveCommit(File saveCommitDIR) throws IOException {
+    public void saveCommit() throws IOException {
         /**temporarily used for convert commit object to string for sha1*/
-        File tempOutFile = Utils.join(saveCommitDIR, "tempOutFile");
+        File tempOutFile = Utils.join(Repository.COMMIT, "tempOutFile");
         if (!tempOutFile.exists()) {
             tempOutFile.createNewFile();
         }
         writeObject(tempOutFile, this);
         String commitString = Utils.readContentsAsString(tempOutFile);
         String commitSha1 = Utils.sha1(commitString);
-        File outFile = Utils.join(saveCommitDIR, commitSha1);
+        File outFile = Utils.join(Repository.COMMIT, commitSha1);
         if (!outFile.exists()) {
             outFile.createNewFile();
             writeObject(outFile, this); // the saved commit object
@@ -103,6 +103,8 @@ public class Commit implements Serializable {
     public String getDate() {
         return this.timestamp;
     }
+
+
 
 
 }
