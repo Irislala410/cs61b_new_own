@@ -342,14 +342,19 @@ public class Repository {
     }
     /** Prints out the ids of all commits that have the given commit message */
     public static void find(String findMessage) throws IOException {
-        List<String> allCommits = Utils.plainFilenamesIn(COMMIT);
+        List<String> allCommits = plainFilenamesIn(COMMIT);
+        int flag = 0;
         for (String commitSha1 : allCommits) {
             if (!commitSha1.equals("tempOutFile")) {
-                Commit printCommit = Utils.readObject(Utils.join(COMMIT, commitSha1), Commit.class);
+                Commit printCommit = readObject(Utils.join(COMMIT, commitSha1), Commit.class);
                 if (printCommit.getMessage().equals(findMessage)) {
                     System.out.println(commitSha1);
+                    flag = 1;
                 }
             }
+        }
+        if (flag == 0) {
+            System.out.println("Found no commit with that message.");
         }
     }
     /** Print out the status information.*/
