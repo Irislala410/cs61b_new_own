@@ -506,4 +506,18 @@ public class Repository {
 
 
     }
+    /** Deletes the branch with the given name. */
+    public static void rmBranch(String branchToRm) {
+        Branch branch = readObject(BRANCH, Branch.class);
+        if (!branch.branch.containsKey(branchToRm)) {
+            System.out.println("A branch with that name does not exist.");
+            System.exit(0);
+        }
+        if (branch.branch.get("head").equals(branchToRm)) {
+            System.out.println("Cannot remove the current branch.");
+            System.exit(0);
+        }
+        branch.branch.remove(branchToRm);
+        branch.save();
+    }
 }

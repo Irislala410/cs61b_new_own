@@ -97,6 +97,7 @@ public class Main {
                     //
                     validateNumArgs(args, 2);
                     Repository.checkInitial();
+                    Repository.rmBranch(args[1]);
                     break;
                 case "reset":
                     //
