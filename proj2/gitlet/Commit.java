@@ -58,10 +58,10 @@ public class Commit implements Serializable {
             writeObject(outFile, this); // the saved commit object
         }
 
-        updateHEAD(commitSha1);
+        Repository.updateHEAD(commitSha1);
 //        updateMaster(commitSha1); //!!!this is a problem for branch. should be changed
         //to sth like updateActiveBranch.
-        updateActiveBranch(commitSha1);
+        Repository.updateActiveBranch(commitSha1);
     }
 
     /** Update the master pointer. */
@@ -69,18 +69,10 @@ public class Commit implements Serializable {
         Utils.writeContents(Repository.MASTER, commitSha1);
     }
 
-    /** Update the HEAD pointer. */
-    public static void updateHEAD(String commitSha1) {
-        Utils.writeContents(Repository.HEAD, commitSha1);
-    }
 
-    /** Update the active branch pointer. */
-    public static void updateActiveBranch(String commitSha1) {
-        Branch branch = Utils.readObject(Repository.BRANCH, Branch.class);
-        String activeBranch = branch.branch.get("head");
-        branch.update(activeBranch, commitSha1);
-        branch.save();
-    }
+
+
+
 
 
     /** Return if the commit contains file: fileName. */

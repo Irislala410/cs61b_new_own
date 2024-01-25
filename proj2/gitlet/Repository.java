@@ -471,35 +471,18 @@ public class Repository {
             System.out.println("No need to checkout the current branch.");
             System.exit(0);
         }
-        // Check if there is untracked files.
 
-        String currCommitSHA1 = branch.branch.get(activeBranch);
-        Commit currCommit = readObject(join(COMMIT, currCommitSHA1), Commit.class);
-        List<String> currFiles = plainFilenamesIn(CWD);
-        for (String currFile : currFiles) {
-            // A file in CWD but not in current commit, then it is an untracked file.
-            if (!currCommit.containFile(currFile)) {
-                System.out.println("There is an untracked file in the way; delete it, "
-                        + "or add and commit it first.");
-                System.exit(0);
-            }
+        // Check if there is untracked files.
+        if (untrackedFileExists()) {
+            System.out.println("There is an untracked file in the way; delete it, "
+                    + "or add and commit it first.");
+            System.exit(0);
         }
-        //Clear CWD and copy files from checked branch.
-        for (String currFile : currFiles) {
-            join(CWD, currFile).delete();
-        }
+
+        //Clear CWD and copy files from checked branch to it.
+        clearFolder(CWD);
         String checkedCommitSHA1 = branch.branch.get(branchName);
-        Commit checkedCommit = readObject(join(COMMIT, checkedCommitSHA1), Commit.class);
-        // Get checked files from commit.
-        Set<String> checkedFiles = checkedCommit.filenameBlob.keySet();
-        for (String copyFile : checkedFiles) {
-            String fileSHA1 = checkedCommit.getBlob(copyFile);
-            byte[] copyFileSHA1 = readContents(join(BLOB, fileSHA1));
-            //Create new file in CWD and paste file from commit to it.
-            File pasteFile = join(CWD, copyFile);
-            pasteFile.createNewFile();
-            writeContents(pasteFile, copyFileSHA1);
-        }
+        copyCommitFile(checkedCommitSHA1, CWD);
         // Update HEAD to the checked branch.
         branch.branch.put("head", branchName);
         branch.save();
@@ -518,6 +501,81 @@ public class Repository {
             System.exit(0);
         }
         branch.branch.remove(branchToRm);
+        branch.save();
+    }
+
+    /** Checks out all the files tracked by the given commit. Moves HEAD to that commit.
+     * Clears staging area. */
+    public static void reset(String commitId) throws IOException {
+        List<String> commits = plainFilenamesIn(COMMIT);
+        if (!commits.contains(commitId)) {
+            System.out.println("No commit with that id exists.");
+            System.exit(0);
+        }
+        if (untrackedFileExists()) {
+            System.out.println("There is an untracked file in the way; delete it, or add "
+                    + "and commit it first.");
+            System.exit(0);
+        }
+
+        clearFolder(CWD);
+        copyCommitFile(commitId, CWD);
+
+        updateHEAD(commitId);
+
+
+
+    }
+
+    /** Check if there is untracked file in CWD which is not saved in current commit.*/
+    public static boolean untrackedFileExists() {
+        Branch branch = readObject(BRANCH, Branch.class);
+        String activeBranch = branch.branch.get("head");
+        String currCommitSHA1 = branch.branch.get(activeBranch);
+        Commit currCommit = readObject(join(COMMIT, currCommitSHA1), Commit.class);
+        List<String> currFiles = plainFilenamesIn(CWD);
+        for (String currFile : currFiles) {
+            // A file in CWD but not in current commit, then it is an untracked file.
+            if (!currCommit.containFile(currFile)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** Delete all the files in the given folder. */
+    public static void clearFolder(File folderToClear) {
+        List<String> deleteFiles = plainFilenamesIn(folderToClear);
+        for (String deleteFile : deleteFiles) {
+            join(folderToClear, deleteFile).delete();
+        }
+    }
+
+    /** Copy all the files from a commit to a folder. */
+    public static void copyCommitFile (String commitId, File destFolder) throws IOException {
+        Commit copyCommit = readObject(join(COMMIT, commitId), Commit.class);
+        // Get checked files from the commit.
+        Set<String> copyFiles = copyCommit.filenameBlob.keySet();
+        for (String copyFile : copyFiles) {
+            String fileSHA1 = copyCommit.getBlob(copyFile);
+            byte[] copyFileByte = readContents(join(BLOB, fileSHA1));
+            //Create new file in CWD and paste file from commit to it.
+            File pasteFile = join(destFolder, copyFile);
+            pasteFile.createNewFile();
+            writeContents(pasteFile, copyFileByte);
+        }
+    }
+
+    /** Update the HEAD pointer. */
+    public static void updateHEAD(String commitSha1) {
+        Utils.writeContents(Repository.HEAD, commitSha1);
+    }
+
+    /** Update the active branch pointer. */
+    public static void updateActiveBranch(String commitSha1) {
+        Branch branch = Utils.readObject(Repository.BRANCH, Branch.class);
+        String activeBranch = branch.branch.get("head");
+        branch.update(activeBranch, commitSha1);
         branch.save();
     }
 }

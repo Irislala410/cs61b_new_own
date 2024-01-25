@@ -103,6 +103,7 @@ public class Main {
                     //
                     validateNumArgs(args, 2);
                     Repository.checkInitial();
+                    Repository.reset(args[1]);
                     break;
                 case "merge":
                     //
