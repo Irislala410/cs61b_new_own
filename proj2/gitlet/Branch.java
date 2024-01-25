@@ -19,8 +19,8 @@ public class Branch implements Serializable {
     /**
      * Create a new branch.*/
     public void createNewBranch(String newBranch) {
-        String currentCommit = Utils.readContentsAsString(Repository.HEAD);
-        this.branch.put(newBranch, currentCommit);
+        String headCommit = Utils.readContentsAsString(Repository.HEAD);
+        this.branch.put(newBranch, headCommit);
     }
     /**
      * Write the branch into Branch file. */

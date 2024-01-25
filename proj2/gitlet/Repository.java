@@ -217,7 +217,7 @@ public class Repository {
         Commit parentCommit = readObject(join(COMMIT, parent), Commit.class);
 //        newCommit.filenameBlob = parentCommit.filenameBlob; // in this way the two
 //        pointers point to a same hashmap.
-        newCommit.filenameBlob = new HashMap<>();
+        newCommit.filenameBlob = new HashMap<>(parentCommit.filenameBlob);//??? parentCommit.filenameBlob seems a problem.
         /* Update the saved files with staging area. */
         List<String> addedFiles = plainFilenamesIn(STAGING);
         for (String addedFile: addedFiles) {
@@ -486,6 +486,7 @@ public class Repository {
         // Update HEAD to the checked branch.
         branch.branch.put("head", branchName);
         branch.save();
+        updateHEAD(checkedCommitSHA1);
 
 
     }
@@ -552,28 +553,30 @@ public class Repository {
     }
 
     /** Copy all the files from a commit to a folder. */
-    public static void copyCommitFile (String commitId, File destFolder) throws IOException {
-        Commit copyCommit = readObject(join(COMMIT, commitId), Commit.class);
-        // Get checked files from the commit.
-        Set<String> copyFiles = copyCommit.filenameBlob.keySet();
-        for (String copyFile : copyFiles) {
-            String fileSHA1 = copyCommit.getBlob(copyFile);
-            byte[] copyFileByte = readContents(join(BLOB, fileSHA1));
-            //Create new file in CWD and paste file from commit to it.
-            File pasteFile = join(destFolder, copyFile);
-            pasteFile.createNewFile();
-            writeContents(pasteFile, copyFileByte);
+    public static void copyCommitFile(String commitId, File destFolder) throws IOException {
+        if (commitId != null) {
+            Commit copyCommit = readObject(join(COMMIT, commitId), Commit.class);
+            // Get checked files from the commit.
+            Set<String> copyFiles = copyCommit.filenameBlob.keySet();
+            for (String copyFile : copyFiles) {
+                String fileSHA1 = copyCommit.getBlob(copyFile);
+                byte[] copyFileByte = readContents(join(BLOB, fileSHA1));
+                //Create new file in CWD and paste file from commit to it.
+                File pasteFile = join(destFolder, copyFile);
+                pasteFile.createNewFile();
+                writeContents(pasteFile, copyFileByte);
+            }
         }
     }
 
     /** Update the HEAD pointer. */
     public static void updateHEAD(String commitSha1) {
-        Utils.writeContents(Repository.HEAD, commitSha1);
+        writeContents(HEAD, commitSha1);
     }
 
     /** Update the active branch pointer. */
     public static void updateActiveBranch(String commitSha1) {
-        Branch branch = Utils.readObject(Repository.BRANCH, Branch.class);
+        Branch branch = readObject(BRANCH, Branch.class);
         String activeBranch = branch.branch.get("head");
         branch.update(activeBranch, commitSha1);
         branch.save();
