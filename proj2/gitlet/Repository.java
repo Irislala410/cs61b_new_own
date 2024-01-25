@@ -217,7 +217,8 @@ public class Repository {
         Commit parentCommit = readObject(join(COMMIT, parent), Commit.class);
 //        newCommit.filenameBlob = parentCommit.filenameBlob; // in this way the two
 //        pointers point to a same hashmap.
-        newCommit.filenameBlob = new HashMap<>(parentCommit.filenameBlob);//??? parentCommit.filenameBlob seems a problem.
+        newCommit.filenameBlob = new HashMap<>(parentCommit.filenameBlob);
+        //??? parentCommit.filenameBlob seems a problem.
         /* Update the saved files with staging area. */
         List<String> addedFiles = plainFilenamesIn(STAGING);
         for (String addedFile: addedFiles) {
@@ -520,24 +521,45 @@ public class Repository {
         }
 
         clearFolder(CWD);
+        clearFolder(STAGING);
         copyCommitFile(commitId, CWD);
 
         updateHEAD(commitId);
+        updateActiveBranch(commitId);
 
 
 
     }
 
-    /** Check if there is untracked file in CWD which is not saved in current commit.*/
+    /** Check if there is untracked file in CWD which is not saved in current commit. */
     public static boolean untrackedFileExists() {
         Branch branch = readObject(BRANCH, Branch.class);
         String activeBranch = branch.branch.get("head");
         String currCommitSHA1 = branch.branch.get(activeBranch);
         Commit currCommit = readObject(join(COMMIT, currCommitSHA1), Commit.class);
-        List<String> currFiles = plainFilenamesIn(CWD);
-        for (String currFile : currFiles) {
-            // A file in CWD but not in current commit, then it is an untracked file.
-            if (!currCommit.containFile(currFile)) {
+        Set<String> currCommitFileNames = currCommit.filenameBlob.keySet();
+        // Only check file name. By checking file name, if a file is in CWD but not in
+        // commit, then it is a untracked file.
+//        List<String> currFiles = plainFilenamesIn(CWD);
+//        for (String currFile : currFiles) {
+//            // A file in CWD but not in current commit, then it is an untracked file.
+//            if (!currCommit.containFile(currFile)) {
+//                return true;
+//            }
+//        }
+        // By checking file content, ...
+        int flag = 0; // untracked file
+        List<String> cwdFiles = plainFilenamesIn(CWD);
+        for (String cwdFile : cwdFiles) {
+            String cwdFileStr = readContentsAsString(join(CWD, cwdFile));
+            for (String currCommitFileName : currCommitFileNames) {
+                String currCommitFileBlob = currCommit.getBlob(currCommitFileName);
+                String currCommitFileStr = readContentsAsString(join(BLOB, currCommitFileBlob));
+                if (cwdFileStr.equals(currCommitFileStr)) {
+                    flag = 1; // the file is tracked
+                }
+            }
+            if (flag == 0) {
                 return true;
             }
         }
