@@ -540,29 +540,29 @@ public class Repository {
         Set<String> currCommitFileNames = currCommit.filenameBlob.keySet();
         // Only check file name. By checking file name, if a file is in CWD but not in
         // commit, then it is a untracked file.
-//        List<String> currFiles = plainFilenamesIn(CWD);
-//        for (String currFile : currFiles) {
-//            // A file in CWD but not in current commit, then it is an untracked file.
-//            if (!currCommit.containFile(currFile)) {
-//                return true;
-//            }
-//        }
-        // By checking file content, ...
-        int flag = 0; // untracked file
-        List<String> cwdFiles = plainFilenamesIn(CWD);
-        for (String cwdFile : cwdFiles) {
-            String cwdFileStr = readContentsAsString(join(CWD, cwdFile));
-            for (String currCommitFileName : currCommitFileNames) {
-                String currCommitFileBlob = currCommit.getBlob(currCommitFileName);
-                String currCommitFileStr = readContentsAsString(join(BLOB, currCommitFileBlob));
-                if (cwdFileStr.equals(currCommitFileStr)) {
-                    flag = 1; // the file is tracked
-                }
-            }
-            if (flag == 0) {
+        List<String> currFiles = plainFilenamesIn(CWD);
+        for (String currFile : currFiles) {
+            // A file in CWD but not in current commit, then it is an untracked file.
+            if (!currCommit.containFile(currFile)) {
                 return true;
             }
         }
+        // By checking file content, ...
+//        int flag = 0; // untracked file
+//        List<String> cwdFiles = plainFilenamesIn(CWD);
+//        for (String cwdFile : cwdFiles) {
+//            String cwdFileStr = readContentsAsString(join(CWD, cwdFile));
+//            for (String currCommitFileName : currCommitFileNames) {
+//                String currCommitFileBlob = currCommit.getBlob(currCommitFileName);
+//                String currCommitFileStr = readContentsAsString(join(BLOB, currCommitFileBlob));
+//                if (cwdFileStr.equals(currCommitFileStr)) {
+//                    flag = 1; // the file is tracked
+//                }
+//            }
+//            if (flag == 0) {
+//                return true;
+//            }
+//        }
         return false;
     }
 
