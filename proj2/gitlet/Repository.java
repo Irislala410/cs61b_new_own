@@ -603,4 +603,30 @@ public class Repository {
         branch.update(activeBranch, commitSha1);
         branch.save();
     }
+
+    public static void merge(String mergeBranch) {
+        if (untrackedFileExists()) {
+            System.out.println("There is an untracked file in the way; delete it, "
+                    + "or add and commit it first.");
+            System.exit(0);
+        }
+        // Failure case: uncommitted changes.
+        List<String> additionFiles = plainFilenamesIn(STAGING);
+        List<String> removalFiles = plainFilenamesIn(RMSTAGING);
+        if (!additionFiles.isEmpty() || !removalFiles.isEmpty()) {
+            System.out.println("You have uncommitted changes.");
+            System.exit(0);
+        }
+        // Failure case: non-exist branch.
+        Branch branch = readObject(BRANCH, Branch.class);
+        if (!branch.branch.containsKey(mergeBranch)) {
+            System.out.println("A branch with that name does not exist.");
+            System.exit(0);
+        }
+        //Failure case: merge a branch with itself.
+        if (branch.branch.get("head").equals(mergeBranch)) {
+            System.out.println("Cannot merge a branch with itself.");
+            System.exit(0);
+        }
+    }
 }
