@@ -764,7 +764,7 @@ public class Repository {
             String mergeFileBlob = mergeCommit.getBlob(conflictFile);
             mergeContent = readContentsAsString(join(BLOB, mergeFileBlob));
         }
-        String conflict = "<<<<<<< HEAD\n" + currContent + "=======\n" + mergeContent + ">>>>>>>";
+        String conflict = "<<<<<<< HEAD\n" + currContent + "\n=======\n" + mergeContent + ">>>>>>>";
         File newFile = join(CWD, conflictFile);
         if (!newFile.exists()) {
             newFile.createNewFile();
