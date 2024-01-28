@@ -540,30 +540,15 @@ public class Repository {
         Commit currCommit = readObject(join(COMMIT, currCommitSHA1), Commit.class);
         Set<String> currCommitFileNames = currCommit.filenameBlob.keySet();
         // Only check file name. By checking file name, if a file is in CWD but not in
-        // commit, then it is a untracked file.
+        // commit or staging folder, then it is an untracked file.
         List<String> currFiles = plainFilenamesIn(CWD);
+        List<String> stagingFiles = plainFilenamesIn(STAGING);
         for (String currFile : currFiles) {
             // A file in CWD but not in current commit, then it is an untracked file.
-            if (!currCommit.containFile(currFile)) {
+            if (!currCommit.containFile(currFile) && !stagingFiles.contains(currFiles)) {
                 return true;
             }
         }
-        // By checking file content, ...
-//        int flag = 0; // untracked file
-//        List<String> cwdFiles = plainFilenamesIn(CWD);
-//        for (String cwdFile : cwdFiles) {
-//            String cwdFileStr = readContentsAsString(join(CWD, cwdFile));
-//            for (String currCommitFileName : currCommitFileNames) {
-//                String currCommitFileBlob = currCommit.getBlob(currCommitFileName);
-//                String currCommitFileStr = readContentsAsString(join(BLOB, currCommitFileBlob));
-//                if (cwdFileStr.equals(currCommitFileStr)) {
-//                    flag = 1; // the file is tracked
-//                }
-//            }
-//            if (flag == 0) {
-//                return true;
-//            }
-//        }
         return false;
     }
 
@@ -632,8 +617,8 @@ public class Repository {
                     + "or add and commit it first.");
             System.exit(0);
         }
-        // Merge case: first get the split commit. If is the current branch or given branch, print out
-        // the messages respectively and exit.
+        // Merge case: first get the split commit. If is the current branch or given branch,
+        // print out the messages respectively and exit.
         String currBranchCommitId = branch.branch.get(currBranch);
         String mergeBranchCommitId = branch.branch.get(mergeBranch);
         String splitCommitId = splitCommit(currBranchCommitId, mergeBranchCommitId);
@@ -658,18 +643,22 @@ public class Repository {
                 if (!splitCommit.containFile(currFile)) {
                     continue;
                 } else if (sameContentFile(currCommit, splitCommit, currFile)) {
-                    // Case 4 (6): file exits in split commit and with same content, then remove the file.
+                    // Case 4 (6): file exits in split commit and with same content,
+                    // then remove the file.
                     join(RMSTAGING, currFile).createNewFile();
                     join(CWD, currFile).delete();
                     continue;
                 }
+                mergeConflict(currCommit, mergeCommit, currFile);
+                conflictFlag = 1;
+                continue;
             }
-            // Case 1 or 2: the file exists both in current branch and given branch with diff content,
-            // and also exists in split commit.
+            // Case 1 or 2: the file exists both in current branch and
+            // given branch with diff content, and also exists in split commit.
             if (!sameContentFile(currCommit, mergeCommit, currFile)
                     && splitCommit.containFile(currFile)) {
-                // Case 1(1): files in current branch and split commit have the same content, then check out
-                // the file from the given branch.
+                // Case 1(1): files in current branch and split commit have the same content,
+                // then check out the file from the given branch.
                 if (sameContentFile(currCommit, splitCommit, currFile)) {
                     checkCommitFile(mergeBranchCommitId, currFile);
                     continue;
@@ -705,11 +694,11 @@ public class Repository {
         }
     }
 
-    /** Determine the more shallow branch (smaller depth) and return the result of getSplitCommit which
-     * is the id of splitCommit. */
+    /** Determine the more shallow branch (smaller depth) and return the result of
+     * getSplitCommit which is the id of splitCommit. */
     public static String splitCommit(String currBranchCommitId, String mergeBranchCommitId) {
         Commit currBranchCommit = readObject(join(COMMIT, currBranchCommitId), Commit.class);
-        Commit mergeBranchCommit = readObject(join(COMMIT,mergeBranchCommitId), Commit.class);
+        Commit mergeBranchCommit = readObject(join(COMMIT, mergeBranchCommitId), Commit.class);
         int currCommitDepth = currBranchCommit.getDepth();
         int mergeCommitDepth = mergeBranchCommit.getDepth();
         if (currCommitDepth <= mergeCommitDepth) {
@@ -720,7 +709,8 @@ public class Repository {
 
     }
 
-    public static String getSplitCommit(String commitId1, String commitId2, String initialCommitId2) {
+    public static String getSplitCommit(String commitId1, String commitId2,
+                                        String initialCommitId2) {
         // The split commit is found.
         if (commitId1.equals(commitId2)) {
             return commitId1;
@@ -753,7 +743,8 @@ public class Repository {
         return file1.equals(file2);
     }
 
-    public static void mergeConflict(Commit currCommit, Commit mergeCommit, String conflictFile) throws IOException {
+    public static void mergeConflict(Commit currCommit, Commit mergeCommit,
+                                     String conflictFile) throws IOException {
         String currContent = null;
         String mergeContent = null;
         if (currCommit.containFile(conflictFile)) {
