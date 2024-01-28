@@ -122,8 +122,8 @@ public class Repository {
         * the removal and doesn't stage the file. */
         File removedFile = join(RMSTAGING, addFile);
         if (removedFile.exists()) {
-                removedFile.delete();
-                System.exit(0);
+            removedFile.delete();
+            System.exit(0);
         }
         if (!fileInCurrentCommit(addFile)) {
             // if file exist and not in current commit, stage it and remove it if
