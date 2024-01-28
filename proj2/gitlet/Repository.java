@@ -756,6 +756,13 @@ public class Repository {
             mergeContent = readContentsAsString(join(BLOB, mergeFileBlob));
         }
         String conflict = "<<<<<<< HEAD\n" + currContent + "\n=======\n" + mergeContent + ">>>>>>>";
+        if (currContent == null) {
+            conflict = "<<<<<<< HEAD\n" + "=======\n" + mergeContent + ">>>>>>>";
+        }
+        if (mergeContent == null) {
+            conflict = "<<<<<<< HEAD\n" + currContent + "\n=======\n" + ">>>>>>>";
+        }
+
         File newFile = join(CWD, conflictFile);
         if (!newFile.exists()) {
             newFile.createNewFile();
