@@ -122,15 +122,8 @@ public class Repository {
         * the removal and doesn't stage the file. */
         File removedFile = join(RMSTAGING, addFile);
         if (removedFile.exists()) {
-            String removedFileStr = Utils.readContentsAsString(removedFile);
-            String fileToAddStr = Utils.readContentsAsString(fileToAdd);
-            if (removedFileStr.equals(fileToAddStr)) {
-//                removedFile.delete();
-//                join(RMSTAGING, addFile).delete();
-//                removeFromRMSTAGING(addFile);
-                Files.delete(removedFile.toPath());
+                removedFile.delete();
                 System.exit(0);
-            }
         }
         if (!fileInCurrentCommit(addFile)) {
             // if file exist and not in current commit, stage it and remove it if
@@ -545,7 +538,7 @@ public class Repository {
         List<String> stagingFiles = plainFilenamesIn(STAGING);
         for (String currFile : currFiles) {
             // A file in CWD but not in current commit, then it is an untracked file.
-            if (!currCommit.containFile(currFile) && !stagingFiles.contains(currFiles)) {
+            if (!currCommit.containFile(currFile) && !stagingFiles.contains(currFile)) {
                 return true;
             }
         }
