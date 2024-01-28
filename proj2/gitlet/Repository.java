@@ -91,6 +91,7 @@ public class Repository {
             Commit initialCommit = new Commit(
                     "initial commit",
                     null,
+                    null,
                     "Thu Jan 1 00:00:00 1970 +0000"
             );
             //Create a branch.
@@ -198,7 +199,7 @@ public class Repository {
         return stagingFiles.contains(fileName);
     }
     /** Create a new commit with the message the user provided. */
-    public static void newCommit(String message) throws IOException {
+    public static void newCommit(String message, String secondParent) throws IOException {
         /* if staging area and remove staging area are both empty, print message and exit. */
         if (plainFilenamesIn(STAGING).isEmpty()
                 && plainFilenamesIn(RMSTAGING).isEmpty()) {
@@ -212,7 +213,7 @@ public class Repository {
         }
         String parent = readContentsAsString(HEAD);
         String timeStamp = getTimeStamp();
-        Commit newCommit = new Commit(message, parent, timeStamp);
+        Commit newCommit = new Commit(message, parent, secondParent, timeStamp);
         /* Read parent commit and get its saved files as new commit's saved files. */
         Commit parentCommit = readObject(join(COMMIT, parent), Commit.class);
 //        newCommit.filenameBlob = parentCommit.filenameBlob; // in this way the two
@@ -604,12 +605,8 @@ public class Repository {
         branch.save();
     }
 
-    public static void merge(String mergeBranch) {
-        if (untrackedFileExists()) {
-            System.out.println("There is an untracked file in the way; delete it, "
-                    + "or add and commit it first.");
-            System.exit(0);
-        }
+    public static void merge(String mergeBranch) throws IOException {
+        int conflictFlag = 0;
         // Failure case: uncommitted changes.
         List<String> additionFiles = plainFilenamesIn(STAGING);
         List<String> removalFiles = plainFilenamesIn(RMSTAGING);
@@ -624,9 +621,155 @@ public class Repository {
             System.exit(0);
         }
         //Failure case: merge a branch with itself.
-        if (branch.branch.get("head").equals(mergeBranch)) {
+        String currBranch = branch.branch.get("head");
+        if (currBranch.equals(mergeBranch)) {
             System.out.println("Cannot merge a branch with itself.");
             System.exit(0);
         }
+        // Failure case: untracked file.
+        if (untrackedFileExists()) {
+            System.out.println("There is an untracked file in the way; delete it, "
+                    + "or add and commit it first.");
+            System.exit(0);
+        }
+        // Merge case: first get the split commit. If is the current branch or given branch, print out
+        // the messages respectively and exit.
+        String currBranchCommitId = branch.branch.get(currBranch);
+        String mergeBranchCommitId = branch.branch.get(mergeBranch);
+        String splitCommitId = splitCommit(currBranchCommitId, mergeBranchCommitId);
+        if (splitCommitId.equals(currBranchCommitId)) {
+            checkBranch(mergeBranch);
+            System.out.println("Current branch fast-forwarded.");
+            System.exit(0);
+        }
+        if (splitCommitId.equals(mergeBranchCommitId)) {
+            System.out.println("Given branch is an ancestor of the current branch.");
+            System.exit(0);
+        }
+        // Merge case: compare files among split commit, current branch and given branch.
+        Commit splitCommit = readObject(join(COMMIT, splitCommitId), Commit.class);
+        Commit currCommit = readObject(join(COMMIT, currBranchCommitId), Commit.class);
+        Commit mergeCommit = readObject(join(COMMIT, mergeBranchCommitId), Commit.class);
+        Set<String> currFiles = currCommit.filenameBlob.keySet();
+        for (String currFile : currFiles) {
+            // Case 4 or 7: file exists in current branch but not given branch
+            if (!mergeCommit.containFile(currFile)) {
+                // Case 7 (4): file doesn't exist in split commit, then do nothing.
+                if (!splitCommit.containFile(currFile)) {
+                    continue;
+                } else if (sameContentFile(currCommit, splitCommit, currFile)) {
+                    // Case 4 (6): file exits in split commit and with same content, then remove the file.
+                    join(RMSTAGING, currFile).createNewFile();
+                    join(CWD, currFile).delete();
+                    continue;
+                }
+            }
+            // Case 1 or 2: the file exists both in current branch and given branch with diff content,
+            // and also exists in split commit.
+            if (!sameContentFile(currCommit, mergeCommit, currFile)
+                    && splitCommit.containFile(currFile)) {
+                // Case 1(1): files in current branch and split commit have the same content, then check out
+                // the file from the given branch.
+                if (sameContentFile(currCommit, splitCommit, currFile)) {
+                    checkCommitFile(mergeBranchCommitId, currFile);
+                    continue;
+                }
+                // Case 2(2): same content in the given branch and split commit, then do nothing.
+                if (sameContentFile(mergeCommit, splitCommit, currFile)) {
+                    continue;
+                }
+            }
+            mergeConflict(currCommit, mergeCommit, currFile);
+            conflictFlag = 1;
+        }
+        Set<String> mergeFiles = mergeCommit.filenameBlob.keySet();
+        for (String mergeFile : mergeFiles) {
+            // Case 5 or 6: file exists in the given branch but not the current branch.
+            if (!currCommit.containFile(mergeFile)) {
+                // Case 6(5): not in split commit either, check out the file and stage it.
+                if (!splitCommit.containFile(mergeFile)) {
+                    checkCommitFile(mergeBranchCommitId, mergeFile);
+                    add(mergeFile);
+                } else if (!sameContentFile(mergeCommit, splitCommit, mergeFile)) {
+                    mergeConflict(currCommit, mergeCommit, mergeFile);
+                    conflictFlag = 1;
+                    //Case 5(7): same content in split commit, do nothing.
+                    //continue;
+                }
+            }
+        }
+        // Merge commit
+        newCommit("Merged " + mergeBranch + " into " + currBranch + ".", mergeBranchCommitId);
+        if (conflictFlag == 1) {
+            System.out.println("Encountered a merge conflict.");
+        }
+    }
+
+    /** Determine the more shallow branch (smaller depth) and return the result of getSplitCommit which
+     * is the id of splitCommit. */
+    public static String splitCommit(String currBranchCommitId, String mergeBranchCommitId) {
+        Commit currBranchCommit = readObject(join(COMMIT, currBranchCommitId), Commit.class);
+        Commit mergeBranchCommit = readObject(join(COMMIT,mergeBranchCommitId), Commit.class);
+        int currCommitDepth = currBranchCommit.getDepth();
+        int mergeCommitDepth = mergeBranchCommit.getDepth();
+        if (currCommitDepth <= mergeCommitDepth) {
+            return getSplitCommit(currBranchCommitId, mergeBranchCommitId, mergeBranchCommitId);
+        } else {
+            return getSplitCommit(mergeBranchCommitId, currBranchCommitId, currBranchCommitId);
+        }
+
+    }
+
+    public static String getSplitCommit(String commitId1, String commitId2, String initialCommitId2) {
+        // The split commit is found.
+        if (commitId1.equals(commitId2)) {
+            return commitId1;
+        }
+        /* The commitId2 goes back to initial commit without finding split commit,
+        the commitId1 needs to go back by 1 commit and search from the beginning of
+        commitId2.
+         */
+        if (commitId2 == null) {
+            Commit commit1 = readObject(join(COMMIT, commitId1), Commit.class);
+            String commit1ParentId = commit1.getParent();
+            return getSplitCommit(commit1ParentId, initialCommitId2, initialCommitId2);
+        }
+        /* The commitId1 goes back to initial commit without finding split commit,
+        meaning there is no split commit, which won't happen in normal case.
+         */
+        if (commitId1 == null) {
+            System.out.println("There is no split commit");
+            System.exit(0);
+        }
+        // commitId2 goes back by 1 commit and check if it is split commit.
+        Commit commit2 = readObject(join(COMMIT, commitId2), Commit.class);
+        String commit2ParentId = commit2.getParent();
+        return getSplitCommit(commitId1, commit2ParentId, initialCommitId2);
+    }
+
+    public static boolean sameContentFile(Commit commit1, Commit commit2, String file) {
+        String file1 = commit1.getBlob(file);
+        String file2 = commit2.getBlob(file);
+        return file1.equals(file2);
+    }
+
+    public static void mergeConflict(Commit currCommit, Commit mergeCommit, String conflictFile) throws IOException {
+        String currContent = null;
+        String mergeContent = null;
+        if (currCommit.containFile(conflictFile)) {
+            String currFileBlob = currCommit.getBlob(conflictFile);
+            currContent = readContentsAsString(join(BLOB, currFileBlob));
+        }
+        if (mergeCommit.containFile(conflictFile)) {
+            String mergeFileBlob = mergeCommit.getBlob(conflictFile);
+            mergeContent = readContentsAsString(join(BLOB, mergeFileBlob));
+        }
+        String conflict = "<<<<<<< HEAD\n" + currContent + "=======\n" + mergeContent + ">>>>>>>";
+        File newFile = join(CWD, conflictFile);
+        if (!newFile.exists()) {
+            newFile.createNewFile();
+        }
+        writeContents(newFile, conflict);
+
     }
 }

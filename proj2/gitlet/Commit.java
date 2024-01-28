@@ -6,7 +6,7 @@ import java.io.Serializable;
 //import java.util.Date;
 import java.util.HashMap;
 
-import static gitlet.Utils.writeObject;
+import static gitlet.Utils.*;
 
 /** Represents a gitlet commit object.
  *  does at a high level.
@@ -27,21 +27,38 @@ public class Commit implements Serializable {
     private String timestamp;
     /** The parent of this Commit. */
     private String parent;
+    /** The second parent (the given branch) of this Commit. Only for merge commits. */
+    private String secondParent;
     /** contains the file names and their blobs in the commit.*/
     HashMap<String, String> filenameBlob;
+
+    /** The depth from initial commit. */
+    private int depth;
 
     /** Constructor for Commit class.
     * @param message: the commit message provided by the user.
     * @param parent: the SHA - 1 hash of the parent commit.
     * @param timestamp: the timestamp of the commit.
     * */
-    public Commit(String message, String parent, String timestamp) {
+    public Commit(String message, String parent, String secondParent, String timestamp) {
         this.message = message;
         this.parent = parent;
+        this.secondParent = secondParent;
         this.timestamp = timestamp;
         this.filenameBlob = new HashMap<>();
+        this.depth = calcuDepth(parent);
     }
 
+    /** Calculate the depth by its parent commit depth. */
+    private int calcuDepth(String parentCommitId) {
+        // Initial commit, depth = 0.
+        if (parentCommitId == null) {
+            return 0;
+        }
+        Commit parentCommit = readObject(join(Repository.COMMIT, parentCommitId), Commit.class);
+        int parentDepth = parentCommit.getDepth();
+        return parentDepth + 1;
+    }
     /** Write commit into a file whose name is the sha1 of the commit. */
     public void saveCommit() throws IOException {
         /**temporarily used for convert commit object to string for sha1*/
@@ -94,6 +111,10 @@ public class Commit implements Serializable {
 
     public String getDate() {
         return this.timestamp;
+    }
+
+    public int getDepth() {
+        return this.depth;
     }
 
 

@@ -37,7 +37,7 @@ public class Main {
                     //
                     validateNumArgs(args, 2);
                     Repository.checkInitial();
-                    Repository.newCommit(args[1]);
+                    Repository.newCommit(args[1], null);
                     break;
                 case "rm":
                     validateNumArgs(args, 2);
