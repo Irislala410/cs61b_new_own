@@ -790,7 +790,8 @@ public class Repository {
     }
 
     public static void updateId(String commitId) {
-        String shortId = commitId.substring(0, 7);
+        String shortId = commitId.substring(0, 8);
+//        System.out.println(shortId);
         HashMap<String, String> id = readObject(ID, HashMap.class);
         id.put(shortId, commitId);
         writeObject(ID,id);
