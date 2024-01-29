@@ -76,20 +76,8 @@ public class Commit implements Serializable {
         }
 
         Repository.updateHEAD(commitSha1);
-//        updateMaster(commitSha1); //!!!this is a problem for branch. should be changed
-        //to sth like updateActiveBranch.
         Repository.updateActiveBranch(commitSha1);
     }
-
-    /** Update the master pointer. */
-    public static void updateMaster(String commitSha1) {
-        Utils.writeContents(Repository.MASTER, commitSha1);
-    }
-
-
-
-
-
 
 
     /** Return if the commit contains file: fileName. */
@@ -115,6 +103,9 @@ public class Commit implements Serializable {
 
     public int getDepth() {
         return this.depth;
+    }
+    public String getSecondParent() {
+        return this.secondParent;
     }
 
 

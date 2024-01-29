@@ -39,18 +39,10 @@ public class Repository {
     public static final File BLOB = join(GITLET_DIR, "blob");
     /** The .commit directory. */
     public static final File COMMIT = join(GITLET_DIR, "commit");
-    /** The .HEAD directory. */
-    public static final File HEAD_DIR = join(GITLET_DIR, "HEAD");
-    /** The .Master directory. */
-    public static final File MASTER_DIR = join(GITLET_DIR, "Master");
     /** The .HEAD File. */
-    public static final File HEAD = join(HEAD_DIR, "HEAD");
-    /** The .Master file. */
-    public static final File MASTER = join(MASTER_DIR, "Master");
-    /** The .BRANCH directory. */
-    public static final File BRANCH_DIR = join(GITLET_DIR, "Branch");
+    public static final File HEAD = join(GITLET_DIR, "HEAD");
     /** The .Branch File. */
-    public static final File BRANCH = join(BRANCH_DIR, "Branch");
+    public static final File BRANCH = join(GITLET_DIR, "Branch");
 
 
 
@@ -81,11 +73,7 @@ public class Repository {
             RMSTAGING.mkdir();
             BLOB.mkdir();
             COMMIT.mkdir();
-            HEAD_DIR.mkdir();
-            MASTER_DIR.mkdir();
             HEAD.createNewFile();
-            MASTER.createNewFile();
-            BRANCH_DIR.mkdir();
             BRANCH.createNewFile();
 
             Commit initialCommit = new Commit(
@@ -98,6 +86,9 @@ public class Repository {
             Branch initialBranch = new Branch();
 //            initialBranch.initializeBranch();
             initialBranch.save();
+//            HashMap<String, String> branch= new HashMap<>();
+//            initialBranch(branch);
+//            saveBranch(branch);
 
             //write the commit into a file. Branch Updating is made in .saveCommit.
             initialCommit.saveCommit();
@@ -111,7 +102,7 @@ public class Repository {
     }
 
     public static void add(String addFile) throws IOException {
-        File fileToAdd = Utils.join(CWD, addFile);
+        File fileToAdd = join(CWD, addFile);
         /*If the file does not exist, print the error message File does not exist.
          * and exit without changing anything.*/
         if (!fileToAdd.exists()) {
@@ -179,7 +170,7 @@ public class Repository {
         String currentCommitSha1 = Utils.readContentsAsString(HEAD);
         // read commit object from Commit directory
         Commit currentCommit = Utils.readObject(
-                Utils.join(COMMIT, currentCommitSha1),
+                join(COMMIT, currentCommitSha1),
                 Commit.class
                 );
         String commitFileSha1 = currentCommit.getBlob(fileName);
@@ -227,8 +218,11 @@ public class Repository {
 
         newCommit.saveCommit();
 
-        clearStaging();
-        clearRMStaging();
+        clearFolder(STAGING);
+        clearFolder(RMSTAGING);
+
+//        clearStaging();
+//        clearRMStaging();
 
 //        newCommit.saveCommit();
 //        System.out.println("9");
@@ -261,21 +255,21 @@ public class Repository {
     }
 
     /** Clear staging area. */
-    public static void clearStaging() {
-        List<String> addedFiles = plainFilenamesIn(STAGING);
-        for (String addedFile: addedFiles) {
-            join(STAGING, addedFile).delete();
-        }
-    }
+//    public static void clearStaging() {
+//        List<String> addedFiles = plainFilenamesIn(STAGING);
+//        for (String addedFile: addedFiles) {
+//            join(STAGING, addedFile).delete();
+//        }
+//    }
 
     /** Clear remove staging area. */
-    public static void clearRMStaging() {
-        List<String> rmFiles = Utils.plainFilenamesIn(RMSTAGING);
-        for (String rmFile: rmFiles) {
-            Utils.join(RMSTAGING, rmFile).delete();
-//            Utils.restrictedDelete(rmFile);
-        }
-    }
+//    public static void clearRMStaging() {
+//        List<String> rmFiles = Utils.plainFilenamesIn(RMSTAGING);
+//        for (String rmFile: rmFiles) {
+//            Utils.join(RMSTAGING, rmFile).delete();
+////            Utils.restrictedDelete(rmFile);
+//        }
+//    }
 
     /** Remove the file from staging area and current commit. Removing from the current
      *  commit is done in next commit. */
@@ -357,6 +351,7 @@ public class Repository {
         /* Print out branches. */
         System.out.println("===" + " Branches " + "===");
         Branch branch = readObject(BRANCH, Branch.class);
+//        HashMap<String, String> branch = readObject(BRANCH, HashMap.class);
         // Print active branch.
         String activeBranch = branch.branch.get("head");
         System.out.println("*" + activeBranch);
@@ -443,10 +438,13 @@ public class Repository {
 
     public static void newBranch(String newBranchName) {
         Branch branch = readObject(BRANCH, Branch.class);
+//        HashMap<String, String> branch = readObject(BRANCH, HashMap.class);
         if (branch.branch.containsKey(newBranchName)) {
             System.out.println("A branch with that name already exists.");
             System.exit(0);
         }
+//        createNewBranch(branch, newBranchName);
+//        saveBranch(branch);
         branch.createNewBranch(newBranchName);
         branch.save();
 
@@ -455,6 +453,7 @@ public class Repository {
      * considered the current branch (HEAD). */
     public static void checkBranch(String branchName) throws IOException {
         Branch branch = readObject(BRANCH, Branch.class);
+//        HashMap<String, String> branch = readObject(BRANCH, HashMap.class);
         String activeBranch = branch.branch.get("head");
         // The given branch doesn't exist.
         if (!branch.branch.containsKey(branchName)) {
@@ -488,6 +487,7 @@ public class Repository {
     /** Deletes the branch with the given name. */
     public static void rmBranch(String branchToRm) {
         Branch branch = readObject(BRANCH, Branch.class);
+//        HashMap<String, String> branch = readObject(BRANCH, HashMap.class);
         if (!branch.branch.containsKey(branchToRm)) {
             System.out.println("A branch with that name does not exist.");
             System.exit(0);
@@ -497,6 +497,7 @@ public class Repository {
             System.exit(0);
         }
         branch.branch.remove(branchToRm);
+//        saveBranch(branch);
         branch.save();
     }
 
@@ -528,10 +529,10 @@ public class Repository {
     /** Check if there is untracked file in CWD which is not saved in current commit. */
     public static boolean untrackedFileExists() {
         Branch branch = readObject(BRANCH, Branch.class);
+//        HashMap<String, String> branch = readObject(BRANCH, HashMap.class);
         String activeBranch = branch.branch.get("head");
         String currCommitSHA1 = branch.branch.get(activeBranch);
         Commit currCommit = readObject(join(COMMIT, currCommitSHA1), Commit.class);
-        Set<String> currCommitFileNames = currCommit.filenameBlob.keySet();
         // Only check file name. By checking file name, if a file is in CWD but not in
         // commit or staging folder, then it is an untracked file.
         List<String> currFiles = plainFilenamesIn(CWD);
@@ -578,7 +579,10 @@ public class Repository {
     /** Update the active branch pointer. */
     public static void updateActiveBranch(String commitSha1) {
         Branch branch = readObject(BRANCH, Branch.class);
+//        HashMap<String, String> branch = readObject(BRANCH, HashMap.class);
         String activeBranch = branch.branch.get("head");
+//        updateBranch(branch, activeBranch, commitSha1);
+//        saveBranch(branch);
         branch.update(activeBranch, commitSha1);
         branch.save();
     }
@@ -594,6 +598,7 @@ public class Repository {
         }
         // Failure case: non-exist branch.
         Branch branch = readObject(BRANCH, Branch.class);
+//        HashMap<String, String> branch = readObject(BRANCH, HashMap.class);
         if (!branch.branch.containsKey(mergeBranch)) {
             System.out.println("A branch with that name does not exist.");
             System.exit(0);
@@ -708,12 +713,18 @@ public class Repository {
         if (commitId1.equals(commitId2)) {
             return commitId1;
         }
+        // Check second parent.
+        Commit commit1 = readObject(join(COMMIT, commitId1), Commit.class);
+        String secondParent = commit1.getSecondParent();
+        if (secondParent.equals(commitId2)) {
+            return commitId1;
+        }
         /* The commitId2 goes back to initial commit without finding split commit,
         the commitId1 needs to go back by 1 commit and search from the beginning of
         commitId2.
          */
         if (commitId2 == null) {
-            Commit commit1 = readObject(join(COMMIT, commitId1), Commit.class);
+//            Commit commit1 = readObject(join(COMMIT, commitId1), Commit.class);
             String commit1ParentId = commit1.getParent();
             return getSplitCommit(commit1ParentId, initialCommitId2, initialCommitId2);
         }
@@ -763,4 +774,24 @@ public class Repository {
         writeContents(newFile, conflict);
 
     }
+
+//    public static void initialBranch(HashMap branch) {
+//        branch.put("head", "master");
+//        branch.put("master", null);
+//    }
+//
+//    public static void saveBranch(HashMap<String,String> branch) {
+//        writeContents(BRANCH, branch);
+//    }
+//
+//    /**
+//     * Create a new branch.*/
+//    public static void createNewBranch(HashMap branch, String newBranch) {
+//        String headCommit = readContentsAsString(Repository.HEAD);
+//        branch.put(newBranch, headCommit);
+//    }
+//
+//    public static void updateBranch(HashMap branch, String branchToUpdate, String commitToUpdate) {
+//        branch.put(branchToUpdate, commitToUpdate);
+//    }
 }
