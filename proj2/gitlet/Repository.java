@@ -44,6 +44,9 @@ public class Repository {
     /** The .Branch File. */
     public static final File BRANCH = join(GITLET_DIR, "Branch");
 
+    public static final File ID = join(GITLET_DIR, "id");
+
+
 
 
 
@@ -75,6 +78,7 @@ public class Repository {
             COMMIT.mkdir();
             HEAD.createNewFile();
             BRANCH.createNewFile();
+            ID.createNewFile();
 
             Commit initialCommit = new Commit(
                     "initial commit",
@@ -89,6 +93,8 @@ public class Repository {
 //            HashMap<String, String> branch= new HashMap<>();
 //            initialBranch(branch);
 //            saveBranch(branch);
+            HashMap<String, String> id= new HashMap<>();
+            writeObject(ID, id);
 
             //write the commit into a file. Branch Updating is made in .saveCommit.
             initialCommit.saveCommit();
@@ -405,6 +411,9 @@ public class Repository {
         if (!operand.equals("--")) {
             System.out.println("Incorrect operands.");
             System.exit(0);
+        }
+        if (commitId.length() < 40){
+            commitId = findLongId(commitId);
         }
         List<String> files = plainFilenamesIn(COMMIT);
         /* Check if the commit id exists*/
@@ -775,23 +784,15 @@ public class Repository {
 
     }
 
-//    public static void initialBranch(HashMap branch) {
-//        branch.put("head", "master");
-//        branch.put("master", null);
-//    }
-//
-//    public static void saveBranch(HashMap<String,String> branch) {
-//        writeContents(BRANCH, branch);
-//    }
-//
-//    /**
-//     * Create a new branch.*/
-//    public static void createNewBranch(HashMap branch, String newBranch) {
-//        String headCommit = readContentsAsString(Repository.HEAD);
-//        branch.put(newBranch, headCommit);
-//    }
-//
-//    public static void updateBranch(HashMap branch, String branchToUpdate, String commitToUpdate) {
-//        branch.put(branchToUpdate, commitToUpdate);
-//    }
+    public static String findLongId(String shortId) {
+        HashMap<String, String> id = readObject(ID, HashMap.class);
+        return id.get(shortId);
+    }
+
+    public static void updateId(String commitId) {
+        String shortId = commitId.substring(0, 7);
+        HashMap<String, String> id = readObject(ID, HashMap.class);
+        id.put(shortId, commitId);
+    }
+
 }

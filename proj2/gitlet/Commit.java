@@ -77,6 +77,7 @@ public class Commit implements Serializable {
 
         Repository.updateHEAD(commitSha1);
         Repository.updateActiveBranch(commitSha1);
+        Repository.updateId(commitSha1);
     }
 
 
