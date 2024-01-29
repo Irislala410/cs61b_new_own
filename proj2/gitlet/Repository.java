@@ -793,6 +793,7 @@ public class Repository {
         String shortId = commitId.substring(0, 7);
         HashMap<String, String> id = readObject(ID, HashMap.class);
         id.put(shortId, commitId);
+        writeObject(ID,id);
     }
 
 }
