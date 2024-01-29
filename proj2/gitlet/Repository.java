@@ -717,7 +717,7 @@ public class Repository {
         Commit commit1 = readObject(join(COMMIT, commitId1), Commit.class);
         String secondParent = commit1.getSecondParent();
         if (secondParent != null && secondParent.equals(commitId2)) {
-            return commitId1;
+            return secondParent;
         }
         /* The commitId2 goes back to initial commit without finding split commit,
         the commitId1 needs to go back by 1 commit and search from the beginning of
